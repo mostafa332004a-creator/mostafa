@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>موقع الأستاذ رشاد شادي</title>
+    
+    <!-- إضافة Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
     <style>
         /* التنسيقات العامة */
         * {
@@ -977,14 +982,35 @@
             font-size: 14px;
             font-weight: 600;
         }
+        
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1002;
+            background: #28a745;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .connection-status.offline {
+            background: #dc3545;
+        }
     </style>
 </head>
 <body>
+    <!-- حالة الاتصال -->
+    <div id="connectionStatus" class="connection-status">🟢 متصل</div>
+
     <!-- رأس الصفحة مع صورة المدرس -->
     <header class="header">
         <div class="container">
             <div class="teacher-profile">
-                <img src="https://imgur.com/6XYMoVu.jpg" alt="صورة الأستاذ رشاد شادي" class="teacher-image">
+                <img src="https://i.imgur.com/6XYMoVu.jpg" alt="صورة الأستاذ رشاد شادي" class="teacher-image">
                 <h1 class="teacher-name">الأستاذ رشاد شادي</h1>
                 <p class="school-name">مدرس اللغة العربية </p>
             </div>
@@ -1104,7 +1130,7 @@
             </div>
             <div class="admin-panel">
                 <div class="auto-save-notice">
-                    💾 نظام الحفظ التلقائي مفعل - جميع البيانات تحفظ تلقائياً
+                    💾 نظام الحفظ التلقائي مفعل - جميع البيانات تحفظ تلقائياً في السحابة
                 </div>
                 
                 <div class="admin-tabs">
@@ -1381,6 +1407,21 @@
     <div id="saveStatus" class="save-status">💾 تم الحفظ</div>
 
     <script>
+        // تكوين Firebase - استبدل هذه القيم بتكوين مشروعك
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4wGfJQ8X8Q3Q7Q6Q5Q4Q3Q2Q1Q0Q9Q8Q7Q",
+            authDomain: "teacher-rashad-site.firebaseapp.com",
+            databaseURL: "https://teacher-rashad-site-default-rtdb.firebaseio.com",
+            projectId: "teacher-rashad-site",
+            storageBucket: "teacher-rashad-site.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456789"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         // بيانات الطلاب
         let studentsData = [];
         
@@ -1400,47 +1441,32 @@
             }
             
             if (!hasQuestions) {
-                questionsData = {
-                    'قراءة': [
-                        {
-                            question: "ما الهدف الأساسي من دراسة نص 'الأم المصرية' في المنهج المصري؟",
-                            options: [
-                                "تعلم وصف الأشخاص",
-                                "معرفة دور الأم في بناء المجتمع",
-                                "تعلم مفردات جديدة فقط",
-                                "معرفة تاريخ مصر"
-                            ],
-                            correct: 1,
-                            grades: ['first', 'second', 'third']
-                        }
+                // إضافة أسئلة افتراضية
+                questionsData['قراءة'].push({
+                    question: "ما الهدف الأساسي من دراسة نص 'الأم المصرية' في المنهج المصري؟",
+                    options: [
+                        "تعلم وصف الأشخاص",
+                        "معرفة دور الأم في بناء المجتمع",
+                        "تعلم مفردات جديدة فقط",
+                        "معرفة تاريخ مصر"
                     ],
-                    'نحو': [
-                        {
-                            question: "ما إعراب 'الطالبُ' في جملة 'الطالبُ مجتهدٌ'؟",
-                            options: [
-                                "فاعل مرفوع",
-                                "مبتدأ مرفوع",
-                                "خبر مرفوع",
-                                "مفعول به منصوب"
-                            ],
-                            correct: 1,
-                            grades: ['first', 'second']
-                        }
+                    correct: 1,
+                    grades: ['first', 'second', 'third']
+                });
+                
+                questionsData['نحو'].push({
+                    question: "ما إعراب 'الطالبُ' في جملة 'الطالبُ مجتهدٌ'؟",
+                    options: [
+                        "فاعل مرفوع",
+                        "مبتدأ مرفوع",
+                        "خبر مرفوع",
+                        "مفعول به منصوب"
                     ],
-                    'نصوص': [
-                        {
-                            question: "من هو شاعر النشيد الوطني المصري؟",
-                            options: [
-                                "أحمد شوقي",
-                                "حافظ إبراهيم", 
-                                "صلاح جاهين",
-                                "عمر الخيام"
-                            ],
-                            correct: 2,
-                            grades: ['third']
-                        }
-                    ]
-                };
+                    correct: 1,
+                    grades: ['first', 'second']
+                });
+                
+                // حفظ الأسئلة الافتراضية
                 saveAllData();
             }
         }
@@ -1462,8 +1488,62 @@
             index: -1
         };
         
-        // تحميل البيانات من التخزين المحلي
+        // تحميل البيانات من Firebase
         function loadAllData() {
+            showSaveStatus('🔄 جاري تحميل البيانات...');
+            
+            // تحديث حالة الاتصال
+            updateConnectionStatus();
+            
+            // تحميل بيانات الطلاب
+            database.ref('studentsData').once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        studentsData = data;
+                    } else {
+                        studentsData = [];
+                    }
+                    
+                    // تحميل بيانات الأسئلة
+                    return database.ref('questionsData').once('value');
+                })
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        questionsData = data;
+                    } else {
+                        questionsData = {
+                            'قراءة': [], 'نحو': [], 'نصوص': [], 'قصة': [], 'إملاء': [], 'بلاغة': []
+                        };
+                    }
+                    
+                    // تحميل الإعدادات
+                    return database.ref('siteSettings').once('value');
+                })
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data && data.examTime) {
+                        currentExam.timeLeft = data.examTime;
+                    }
+                    
+                    // تهيئة الأسئلة الافتراضية إذا لم تكن هناك بيانات
+                    initializeDefaultQuestions();
+                    
+                    showSaveStatus('✅ تم تحميل البيانات من السحابة');
+                    console.log('تم تحميل جميع البيانات بنجاح من Firebase');
+                })
+                .catch((error) => {
+                    console.error('خطأ في تحميل البيانات من Firebase:', error);
+                    showSaveStatus('⚠️ جاري التحميل من النسخة المحلية', true);
+                    
+                    // استخدام البيانات المحلية كنسخة احتياطية
+                    loadFromLocalStorage();
+                });
+        }
+        
+        // تحميل البيانات من التخزين المحلي كنسخة احتياطية
+        function loadFromLocalStorage() {
             // تحميل بيانات الطلاب
             const savedStudents = localStorage.getItem('studentsData');
             if (savedStudents) {
@@ -1487,12 +1567,44 @@
             
             // تهيئة الأسئلة الافتراضية إذا لم تكن هناك بيانات
             initializeDefaultQuestions();
+        }
+
+        // حفظ جميع البيانات في Firebase
+        function saveAllData() {
+            showSaveStatus('💾 جاري الحفظ في السحابة...');
             
-            console.log('تم تحميل جميع البيانات بنجاح');
+            // حفظ بيانات الطلاب
+            database.ref('studentsData').set(studentsData)
+                .then(() => {
+                    // حفظ بيانات الأسئلة
+                    return database.ref('questionsData').set(questionsData);
+                })
+                .then(() => {
+                    // حفظ الإعدادات
+                    const settings = {
+                        examTime: currentExam.timeLeft,
+                        lastSave: new Date().toISOString()
+                    };
+                    return database.ref('siteSettings').set(settings);
+                })
+                .then(() => {
+                    showSaveStatus('✅ تم الحفظ في السحابة');
+                    console.log('تم الحفظ في Firebase:', new Date().toLocaleString());
+                    
+                    // حفظ نسخة محلية كنسخة احتياطية
+                    saveToLocalStorage();
+                })
+                .catch((error) => {
+                    console.error('خطأ في الحفظ في Firebase:', error);
+                    showSaveStatus('❌ خطأ في الحفظ، جاري الحفظ محلياً', true);
+                    
+                    // الحفظ محلياً كنسخة احتياطية
+                    saveToLocalStorage();
+                });
         }
         
-        // حفظ جميع البيانات
-        function saveAllData() {
+        // حفظ البيانات في التخزين المحلي كنسخة احتياطية
+        function saveToLocalStorage() {
             try {
                 localStorage.setItem('studentsData', JSON.stringify(studentsData));
                 localStorage.setItem('questionsData', JSON.stringify(questionsData));
@@ -1503,15 +1615,28 @@
                 };
                 localStorage.setItem('siteSettings', JSON.stringify(settings));
                 
-                showSaveStatus('💾 تم الحفظ');
-                console.log('تم الحفظ:', new Date().toLocaleString());
-                
+                console.log('تم الحفظ محلياً كنسخة احتياطية');
             } catch (error) {
-                console.error('خطأ في الحفظ:', error);
-                showSaveStatus('❌ خطأ في الحفظ', true);
+                console.error('خطأ في الحفظ المحلي:', error);
             }
         }
-        
+
+        // تحديث حالة الاتصال
+        function updateConnectionStatus() {
+            const connectionRef = database.ref('.info/connected');
+            const statusElement = document.getElementById('connectionStatus');
+            
+            connectionRef.on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    statusElement.textContent = '🟢 متصل بالسحابة';
+                    statusElement.classList.remove('offline');
+                } else {
+                    statusElement.textContent = '🔴 غير متصل - الوضع المحلي';
+                    statusElement.classList.add('offline');
+                }
+            });
+        }
+
         // عرض حالة الحفظ
         function showSaveStatus(message, isError = false) {
             const statusEl = document.getElementById('saveStatus');
@@ -1523,7 +1648,7 @@
             
             setTimeout(() => {
                 statusEl.classList.remove('show');
-            }, 2000);
+            }, 3000);
         }
         
         // إضافة أحداث لتحديث التنسيق عند اختيار الإجابة الصحيحة
@@ -1954,7 +2079,7 @@
             document.getElementById('option3').value = '';
             document.getElementById('option4').value = '';
             
-            alert('تم إضافة السؤال بنجاح وحفظه تلقائياً');
+            alert('تم إضافة السؤال بنجاح وحفظه تلقائياً في السحابة');
             loadQuestionsData();
         }
         
@@ -2042,7 +2167,7 @@
             // إعادة تحميل البيانات
             loadQuestionsData();
             
-            alert('تم تحديث السؤال بنجاح');
+            alert('تم تحديث السؤال بنجاح وحفظه في السحابة');
         }
         
         // إغلاق نافذة تعديل السؤال
@@ -2079,7 +2204,10 @@
             const allData = {
                 students: studentsData,
                 questions: questionsData,
-                settings: JSON.parse(localStorage.getItem('siteSettings')) || {},
+                settings: {
+                    examTime: currentExam.timeLeft,
+                    lastSave: new Date().toISOString()
+                },
                 exportDate: new Date().toISOString(),
                 version: '1.0'
             };
@@ -2125,10 +2253,11 @@
                     questionsData = importedData.questions;
                     
                     if (importedData.settings) {
-                        localStorage.setItem('siteSettings', JSON.stringify(importedData.settings));
+                        // حفظ الإعدادات في Firebase
+                        database.ref('siteSettings').set(importedData.settings);
                     }
                     
-                    // حفظ البيانات المستوردة
+                    // حفظ البيانات المستوردة في Firebase
                     saveAllData();
                     
                     showSaveStatus('📥 تم الاستيراد بنجاح');
@@ -2159,6 +2288,11 @@
                     'قراءة': [], 'نحو': [], 'نصوص': [], 'قصة': [], 'إملاء': [], 'بلاغة': []
                 };
                 
+                // مسح البيانات من Firebase
+                database.ref('studentsData').remove();
+                database.ref('questionsData').remove();
+                
+                // مسح البيانات المحلية
                 localStorage.removeItem('studentsData');
                 localStorage.removeItem('questionsData');
                 localStorage.removeItem('siteSettings');
