@@ -32,6 +32,7 @@
         // جعل المتغيرات متاحة عالمياً
         window.firebaseApp = app;
         window.firebaseDatabase = database;
+        console.log('✅ Firebase تم التحميل بنجاح');
     </script>
     
     <style>
@@ -469,6 +470,47 @@
             transform: rotate(90deg);
         }
         
+        /* صفحة إدخال اسم الطالب */
+        .student-name-modal {
+            text-align: center;
+        }
+        
+        .student-name-section {
+            background: #e8f5e9;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 3px solid #4caf50;
+            text-align: center;
+        }
+        
+        .student-name-section h4 {
+            color: #2e7d32;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .name-required {
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        
+        .student-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #2196f3;
+        }
+        
+        .student-info p {
+            margin: 5px 0;
+            color: #1565c0;
+            font-weight: 500;
+        }
+        
         /* تنسيقات صفحة الامتحان */
         .exam-container {
             background: white;
@@ -492,6 +534,17 @@
             color: #1a5f7a;
             font-size: 26px;
             font-weight: 700;
+        }
+        
+        .student-info-exam {
+            background: #e8f5e9;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #4caf50;
+            text-align: center;
+            font-weight: 600;
+            color: #2e7d32;
         }
         
         .timer {
@@ -665,19 +718,21 @@
         }
         
         .student-name-input input {
-            padding: 12px 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 300px;
+            padding: 15px 20px;
+            border: 2px solid #159895;
+            border-radius: 10px;
+            font-size: 18px;
+            width: 350px;
             max-width: 100%;
-            transition: border 0.3s;
+            transition: all 0.3s;
+            text-align: center;
         }
         
         .student-name-input input:focus {
-            border-color: #159895;
+            border-color: #1a5f7a;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(21, 152, 149, 0.1);
+            box-shadow: 0 0 0 3px rgba(21, 152, 149, 0.2);
+            transform: scale(1.02);
         }
         
         .result-buttons {
@@ -795,219 +850,6 @@
             background: #c82333;
         }
         
-        .add-question-form, .edit-question-form {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .form-row .form-group {
-            flex: 1;
-            margin-bottom: 0;
-        }
-        
-        .option-input {
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .option-input-field {
-            flex: 1;
-        }
-        
-        .correct-option {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .grade-checkboxes {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .grade-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .auto-save-notice {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            border: 1px solid #c3e6cb;
-            text-align: center;
-        }
-        
-        .save-status {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #28a745;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            font-size: 14px;
-            z-index: 1001;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .save-status.show {
-            opacity: 1;
-        }
-        
-        /* تنسيقات جديدة للإجابة الصحيحة */
-        .correct-answer-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #e8f5e9;
-            border-radius: 8px;
-            border: 1px solid #c8e6c9;
-        }
-        
-        .correct-answer-checkbox {
-            width: 22px;
-            height: 22px;
-            accent-color: #28a745;
-            cursor: pointer;
-        }
-        
-        .correct-answer-label {
-            font-weight: bold;
-            color: #2e7d32;
-            font-size: 16px;
-        }
-        
-        .option-with-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            transition: all 0.3s;
-        }
-        
-        .option-with-checkbox:hover {
-            border-color: #bdbdbd;
-            background: #f9f9f9;
-        }
-        
-        .option-with-checkbox.correct {
-            background: #e8f5e9;
-            border-color: #4caf50;
-            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
-        }
-        
-        .option-text {
-            flex: 1;
-            padding: 12px 15px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            transition: all 0.3s;
-            min-height: 50px;
-            resize: vertical;
-        }
-        
-        .option-text:focus {
-            outline: none;
-            border-color: #159895;
-            box-shadow: 0 0 0 3px rgba(21, 152, 149, 0.1);
-        }
-        
-        .option-number {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 35px;
-            height: 35px;
-            background: #1a5f7a;
-            color: white;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        
-        /* تنسيقات خاصة بالأسئلة */
-        .question-input-section {
-            margin-bottom: 25px;
-        }
-        
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-        
-        .section-icon {
-            width: 24px;
-            height: 24px;
-            background: #1a5f7a;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-        
-        .section-title-text {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1a5f7a;
-        }
-        
-        .options-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .option-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .option-title {
-            font-weight: 600;
-            color: #555;
-        }
-        
-        .correct-badge {
-            background: #4caf50;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        
         .connection-status {
             position: fixed;
             top: 10px;
@@ -1026,25 +868,22 @@
             background: #dc3545;
         }
         
-        .student-name-section {
-            background: #e8f5e9;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border: 2px solid #4caf50;
-            text-align: center;
+        .save-status {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
         
-        .student-name-section h4 {
-            color: #2e7d32;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-        
-        .name-required {
-            color: #d32f2f;
-            font-weight: bold;
-            margin-top: 10px;
+        .save-status.show {
+            opacity: 1;
         }
     </style>
 </head>
@@ -1134,12 +973,47 @@
         </div>
     </footer>
 
+    <!-- صفحة إدخال اسم الطالب -->
+    <div id="studentNamePage" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">إدخال البيانات الشخصية</h3>
+            </div>
+            <div class="student-name-modal">
+                <div class="student-name-section">
+                    <h4>📝 أدخل اسمك للبدء في الامتحان</h4>
+                    <div class="student-info">
+                        <p>🔹 سيتم حفظ نتيجتك باسمك في سجلات المدرس</p>
+                        <p>🔹 تأكد من كتابة اسمك بشكل صحيح</p>
+                        <p>🔹 لا يمكن تغيير الاسم بعد بداية الامتحان</p>
+                    </div>
+                    <div class="student-name-input">
+                        <input type="text" id="studentNameInput" placeholder="أدخل اسمك الثلاثي هنا" style="text-align: center; font-size: 18px;">
+                    </div>
+                    <div class="name-required">* مطلوب إدخال الاسم للمتابعة</div>
+                </div>
+                
+                <div class="exam-info" id="examInfo">
+                    <!-- سيتم تعبئة معلومات الامتحان هنا -->
+                </div>
+                
+                <div class="result-buttons" style="margin-top: 30px;">
+                    <button class="btn btn-secondary" onclick="closeStudentNamePage()">إلغاء</button>
+                    <button class="btn btn-success" onclick="confirmStudentName()">بدء الامتحان</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- صفحة الامتحان -->
     <div id="examPage" class="modal">
         <div class="modal-content">
             <div class="exam-header">
                 <h3 class="exam-title" id="examTitle">امتحان</h3>
                 <div class="timer" id="timer">1:00</div>
+            </div>
+            <div class="student-info-exam" id="studentInfoExam">
+                <!-- سيتم تعبئة معلومات الطالب هنا -->
             </div>
             <div class="exam-container" id="examContainer">
                 <!-- سيتم ملء الأسئلة ديناميكيًا -->
@@ -1152,16 +1026,9 @@
         <div class="modal-content">
             <div class="result-container">
                 <h2 class="result-title">نتيجة الامتحان</h2>
-                
-                <!-- قسم اسم الطالب محسّن -->
-                <div class="student-name-section">
-                    <h4>📝 أدخل اسمك للحفظ في السجلات</h4>
-                    <div class="student-name-input">
-                        <input type="text" id="studentName" placeholder="أدخل اسمك الثلاثي هنا" style="text-align: center; font-size: 18px; padding: 15px;">
-                    </div>
-                    <div class="name-required">* سيتم حفظ نتيجتك باسمك في سجلات المدرس</div>
+                <div class="student-info-exam" id="studentInfoResult">
+                    <!-- سيتم تعبئة معلومات الطالب هنا -->
                 </div>
-                
                 <div class="score" id="finalScore">0/10</div>
                 <div class="message" id="resultMessage">
                     <!-- سيتم ملء الرسالة ديناميكيًا -->
@@ -1188,9 +1055,6 @@
                 
                 <div class="admin-tabs">
                     <button class="admin-tab active" onclick="openAdminTab(event, 'students')">الطلاب والنتائج</button>
-                    <button class="admin-tab" onclick="openAdminTab(event, 'questions')">إدارة الأسئلة</button>
-                    <button class="admin-tab" onclick="openAdminTab(event, 'addQuestion')">إضافة سؤال جديد</button>
-                    <button class="admin-tab" onclick="openAdminTab(event, 'backup')">النسخ الاحتياطي</button>
                 </div>
                 
                 <div id="studentsTab" class="admin-tab-content active">
@@ -1210,60 +1074,6 @@
                             <!-- سيتم ملء البيانات ديناميكيًا -->
                         </tbody>
                     </table>
-                </div>
-                
-                <div id="questionsTab" class="admin-tab-content">
-                    <h3>إدارة الأسئلة</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>اختر المادة:</label>
-                            <select id="subjectFilter" onchange="filterQuestions()">
-                                <option value="all">جميع المواد</option>
-                                <option value="قراءة">القراءة</option>
-                                <option value="نحو">النحو</option>
-                                <option value="نصوص">النصوص</option>
-                                <option value="قصة">القصة</option>
-                                <option value="إملاء">الإملاء</option>
-                                <option value="بلاغة">البلاغة</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>اختر الصف:</label>
-                            <select id="gradeFilter" onchange="filterQuestions()">
-                                <option value="all">جميع الصفوف</option>
-                                <option value="first">الصف الأول</option>
-                                <option value="second">الصف الثاني</option>
-                                <option value="third">الصف الثالث</option>
-                            </select>
-                        </div>
-                    </div>
-                    <table class="questions-table">
-                        <thead>
-                            <tr>
-                                <th>السؤال</th>
-                                <th>المادة</th>
-                                <th>الصفوف</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="questionsTableBody">
-                            <!-- سيتم ملء البيانات ديناميكيًا -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div id="addQuestionTab" class="admin-tab-content">
-                    <h3>إضافة سؤال جديد</h3>
-                    <div class="add-question-form">
-                        <!-- محتوى إضافة السؤال -->
-                    </div>
-                </div>
-                
-                <div id="backupTab" class="admin-tab-content">
-                    <h3>النسخ الاحتياطي والاستعادة</h3>
-                    <div class="add-question-form">
-                        <!-- محتوى النسخ الاحتياطي -->
-                    </div>
                 </div>
             </div>
         </div>
@@ -1326,6 +1136,7 @@
         let currentExam = {
             grade: '',
             subject: '',
+            studentName: '',
             questions: [],
             currentQuestion: 0,
             answers: [],
@@ -1333,42 +1144,22 @@
             timer: null
         };
         
-        // متغيرات لتعديل الأسئلة
-        let currentEditingQuestion = {
-            subject: '',
-            index: -1
-        };
-        
         // انتظار تحميل Firebase ثم تحميل البيانات
         document.addEventListener('DOMContentLoaded', function() {
             // الانتظار قليلاً لضمان تحميل Firebase
             setTimeout(() => {
-                if (window.firebaseDatabase) {
-                    loadAllData();
-                    updateConnectionStatus();
-                } else {
-                    console.error('Firebase لم يتم تحميله بشكل صحيح');
-                    document.getElementById('connectionStatus').textContent = '🔴 خطأ في الاتصال';
-                    document.getElementById('connectionStatus').classList.add('offline');
-                }
+                loadAllData();
+                updateConnectionStatus();
             }, 1000);
         });
 
-        // تحميل البيانات من Firebase
+        // تحميل البيانات
         function loadAllData() {
             showSaveStatus('🔄 جاري تحميل البيانات...');
-            
-            if (!window.firebaseDatabase) {
-                console.error('Firebase Database غير متاح');
-                loadFromLocalStorage();
-                return;
-            }
-
-            // سنستخدم localStorage مؤقتاً لأن Firebase يحتاج إعدادات إضافية
             loadFromLocalStorage();
         }
         
-        // تحميل البيانات من التخزين المحلي كنسخة احتياطية
+        // تحميل البيانات من التخزين المحلي
         function loadFromLocalStorage() {
             // تحميل بيانات الطلاب
             const savedStudents = localStorage.getItem('studentsData');
@@ -1423,7 +1214,6 @@
 
         // تحديث حالة الاتصال
         function updateConnectionStatus() {
-            // في هذا الإصدار نستخدم localStorage فقط
             document.getElementById('connectionStatus').textContent = '🟢 متصل (وضع محلي)';
         }
 
@@ -1441,13 +1231,14 @@
             }, 3000);
         }
         
-        // دالة لبدء الامتحان مباشرة
+        // دالة لبدء الامتحان - تفتح صفحة إدخال الاسم أولاً
         function startExam(grade, subject) {
             // حفظ بيانات الامتحان الحالي
             currentExam.grade = grade;
             currentExam.subject = subject;
+            currentExam.studentName = '';
             
-            // الحصول على الأسئلة من التخزين المحلي
+            // الحصول على الأسئلة
             currentExam.questions = questionsData[subject] || [];
             
             // إذا لم تكن هناك أسئلة، نعرض رسالة
@@ -1456,26 +1247,71 @@
                 return;
             }
             
+            // إعداد معلومات الامتحان للعرض
+            const gradeTitles = {
+                'first': 'الصف الأول الإعدادي',
+                'second': 'الصف الثاني الإعدادي', 
+                'third': 'الصف الثالث الإعدادي'
+            };
+            
+            const examInfoHTML = `
+                <div class="student-info">
+                    <p><strong>الامتحان:</strong> ${gradeTitles[grade]} - ${subject}</p>
+                    <p><strong>عدد الأسئلة:</strong> ${currentExam.questions.length} أسئلة</p>
+                    <p><strong>مدة الامتحان:</strong> 1 دقيقة</p>
+                </div>
+            `;
+            
+            document.getElementById('examInfo').innerHTML = examInfoHTML;
+            document.getElementById('studentNameInput').value = '';
+            document.getElementById('studentNameInput').focus();
+            
+            // عرض صفحة إدخال اسم الطالب
+            document.getElementById('studentNamePage').style.display = 'flex';
+        }
+        
+        // تأكيد اسم الطالب وبدء الامتحان
+        function confirmStudentName() {
+            const studentName = document.getElementById('studentNameInput').value.trim();
+            
+            if (!studentName) {
+                alert('⚠️ يرجى إدخال اسمك للمتابعة');
+                document.getElementById('studentNameInput').focus();
+                return;
+            }
+            
+            // حفظ اسم الطالب
+            currentExam.studentName = studentName;
+            
+            // إعداد بيانات الامتحان
             currentExam.currentQuestion = 0;
             currentExam.answers = new Array(currentExam.questions.length).fill(-1);
             currentExam.timeLeft = 60; // 1 دقيقة
             
-            // عرض صفحة الامتحان
+            // إغلاق صفحة الاسم وفتح صفحة الامتحان
+            document.getElementById('studentNamePage').style.display = 'none';
             document.getElementById('examPage').style.display = 'flex';
             
-            // تعيين عنوان الامتحان
+            // تعيين عنوان الامتحان ومعلومات الطالب
             const gradeTitles = {
                 'first': 'الصف الأول الإعدادي',
                 'second': 'الصف الثاني الإعدادي',
                 'third': 'الصف الثالث الإعدادي'
             };
-            document.getElementById('examTitle').textContent = `${gradeTitles[grade]} - امتحان ${subject}`;
+            
+            document.getElementById('examTitle').textContent = `${gradeTitles[currentExam.grade]} - امتحان ${currentExam.subject}`;
+            document.getElementById('studentInfoExam').textContent = `الطالب: ${currentExam.studentName}`;
             
             // بدء المؤقت
             startTimer();
             
             // عرض السؤال الأول
             displayQuestion();
+        }
+        
+        // إغلاق صفحة إدخال الاسم
+        function closeStudentNamePage() {
+            document.getElementById('studentNamePage').style.display = 'none';
         }
         
         // دالة لعرض السؤال الحالي
@@ -1569,19 +1405,9 @@
                 }
             }
             
-            // الحصول على اسم الطالب
-            const studentName = document.getElementById('studentName').value;
-            
-            // التحقق من إدخال الاسم
-            if (!studentName || studentName.trim() === '') {
-                alert('⚠️ يرجى إدخال اسمك لحفظ النتيجة في السجلات');
-                document.getElementById('studentName').focus();
-                return;
-            }
-            
             // حفظ نتيجة الطالب
             const result = {
-                name: studentName.trim(),
+                name: currentExam.studentName,
                 grade: currentExam.grade,
                 subject: currentExam.subject,
                 score: score,
@@ -1598,22 +1424,23 @@
             document.getElementById('resultPage').style.display = 'flex';
             
             document.getElementById('finalScore').textContent = `${score}/${currentExam.questions.length}`;
+            document.getElementById('studentInfoResult').textContent = `الطالب: ${currentExam.studentName}`;
             
             // عرض الرسالة المناسبة
             const messageElement = document.getElementById('resultMessage');
             const percentage = (score / currentExam.questions.length) * 100;
             
             if (percentage >= 80) {
-                messageElement.textContent = `ممتاز ${studentName}! أداء رائع، استمر في هذا التميز!`;
+                messageElement.textContent = `ممتاز ${currentExam.studentName}! أداء رائع، استمر في هذا التميز!`;
                 messageElement.className = 'message success';
             } else if (percentage >= 60) {
-                messageElement.textContent = `جيد جداً ${studentName}، يمكنك التحسين أكثر. استمر في المذاكرة!`;
+                messageElement.textContent = `جيد جداً ${currentExam.studentName}، يمكنك التحسين أكثر. استمر في المذاكرة!`;
                 messageElement.className = 'message encouragement';
             } else if (percentage >= 50) {
-                messageElement.textContent = `مقبول ${studentName}، لكن تحتاج إلى مزيد من الجهد والتركيز!`;
+                messageElement.textContent = `مقبول ${currentExam.studentName}، لكن تحتاج إلى مزيد من الجهد والتركيز!`;
                 messageElement.className = 'message encouragement';
             } else {
-                messageElement.textContent = `${studentName}، يجب أن تذاكر أكثر، حاول مرة أخرى لتكون أفضل!`;
+                messageElement.textContent = `${currentExam.studentName}، يجب أن تذاكر أكثر، حاول مرة أخرى لتكون أفضل!`;
                 messageElement.className = 'message encouragement';
             }
         }
@@ -1621,16 +1448,13 @@
         // دالة لإعادة الامتحان
         function restartExam() {
             document.getElementById('resultPage').style.display = 'none';
-            // إعادة تعيين اسم الطالب
-            document.getElementById('studentName').value = '';
+            // العودة إلى صفحة إدخال الاسم
             startExam(currentExam.grade, currentExam.subject);
         }
         
         // دالة للعودة إلى الصفحة الرئيسية
         function goToHome() {
             document.getElementById('resultPage').style.display = 'none';
-            // إعادة تعيين اسم الطالب
-            document.getElementById('studentName').value = '';
         }
         
         // التحقق من نموذج الدخول إلى لوحة التحكم
@@ -1724,10 +1548,14 @@
         
         // إغلاق النوافذ عند النقر خارجها
         window.onclick = function(event) {
+            const studentNamePage = document.getElementById('studentNamePage');
             const examPage = document.getElementById('examPage');
             const resultPage = document.getElementById('resultPage');
             const adminPanel = document.getElementById('adminPanel');
             
+            if (event.target == studentNamePage) {
+                studentNamePage.style.display = "none";
+            }
             if (event.target == examPage) {
                 // لا تغلق نافذة الامتحان بالنقر خارجها
             }
