@@ -6,8 +6,28 @@
     <title>موقع الأستاذ رشاد شادي</title>
     
     <!-- إضافة Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBg8n3jeovOfcJj6wMWC0VSG5EcDV8ro4A",
+    authDomain: "teacher-rashad.firebaseapp.com",
+    databaseURL: "https://teacher-rashad-default-rtdb.firebaseio.com",
+    projectId: "teacher-rashad",
+    storageBucket: "teacher-rashad.firebasestorage.app",
+    messagingSenderId: "535378930907",
+    appId: "1:535378930907:web:0c1b2f7de96f05e084f0fe",
+    measurementId: "G-YBGST2ZGNF"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
     
     <style>
         /* التنسيقات العامة */
@@ -2330,3 +2350,4 @@
     </script>
 </body>
 </html>
+
