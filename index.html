@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع نماذج الامتحانات المتخصصة</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* التصميم العام */
+        header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background 0.3s;
+            cursor: pointer;
+        }
+        
+        nav ul li a:hover, .nav-link.active {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .section {
+            display: none;
+            min-height: 70vh;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), #3498db;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .hero-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 20px;
+        }
+        
+        /* قسم التخصصات */
+        .departments {
+            margin: 40px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--secondary-color);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 50%;
+            transform: translateX(50%);
+            width: 80px;
+            height: 3px;
+            background: var(--primary-color);
+        }
+        
+        .departments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .department-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .department-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .department-img {
+            height: 180px;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .department-content {
+            padding: 20px;
+        }
+        
+        .department-content h3 {
+            margin-bottom: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .department-content p {
+            color: #666;
+            margin-bottom: 15px;
+            min-height: 60px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: var(--accent-color);
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-warning {
+            background: var(--warning-color);
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+        }
+        
+        .btn-success:hover {
+            background: #27ae60;
+        }
+        
+        /* قسم الامتحان */
+        .exam-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .timer {
+            background: var(--accent-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .question-counter {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+        
+        .question {
+            margin-bottom: 25px;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            line-height: 1.5;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .options {
+            list-style: none;
+        }
+        
+        .options li {
+            margin-bottom: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .options li:hover {
+            background: #e9ecef;
+            transform: translateX(-5px);
+        }
+        
+        .options li.selected {
+            background: #d1ecf1;
+            border-color: var(--primary-color);
+            transform: translateX(-5px);
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        /* قسم النتائج */
+        .results-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+        }
+        
+        .thank-you-message {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .thank-you-message h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .thank-you-message p {
+            color: #388e3c;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        .completion-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .completion-info h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+        
+        /* قسم الإدارة */
+        .admin-panel {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .admin-login {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .admin-login h2 {
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .admin-content {
+            display: none;
+        }
+        
+        .admin-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .admin-section {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .results-table th, .results-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        .view-btn {
+            background: #3498db;
+            color: white;
+        }
+        
+        .view-btn:hover {
+            background: #2980b9;
+        }
+        
+        .clear-all-btn {
+            background: var(--accent-color);
+            margin-top: 15px;
+        }
+        
+        .clear-all-btn:hover {
+            background: #c0392b;
+        }
+        
+        footer {
+            background: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 25px 0;
+            margin-top: 50px;
+        }
+        
+        /* تصميم متجاوب */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            nav ul {
+                margin-top: 0;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            nav ul li {
+                margin: 5px;
+            }
+            
+            .hero {
+                height: 300px;
+                padding: 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .exam-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+            }
+            
+            .navigation-buttons button {
+                width: 100%;
+            }
+            
+            .department-content p {
+                min-height: auto;
+            }
+            
+            .results-table {
+                font-size: 0.9rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        /* تحسينات للشاشات الصغيرة */
+        @media (max-width: 480px) {
+            .container {
+                width: 95%;
+                padding: 10px;
+            }
+            
+            .hero-content h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .department-img {
+                height: 150px;
+                font-size: 1.2rem;
+            }
+            
+            .question-text {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">موقع الامتحانات المتخصصة</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-section="home">الرئيسية</a></li>
+                    <li><a href="#" class="nav-link" data-section="departments">التخصصات</a></li>
+                    <li><a href="#" class="nav-link" data-section="admin">لوحة التحكم</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="section active">
+            <div class="container">
+                <div class="hero">
+                    <div class="hero-content">
+                        <h1>اختبارات متخصصة مع مؤقت لكل سؤال</h1>
+                        <p>اختبر معرفتك في مجالات متعددة مع نظام توقيت متقدم لكل سؤال لتحسين أدائك</p>
+                        <button class="btn" id="start-learning">ابدأ التعلم الآن</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="departments" class="section">
+            <div class="container">
+                <div class="departments">
+                    <h2 class="section-title">التخصصات المتاحة</h2>
+                    <div class="departments-grid">
+                        <div class="department-card">
+                            <div class="department-img" style="background-color: #3498db;">برمجة وتصميم المواقع</div>
+                            <div class="department-content">
+                                <h3>برمجة وتصميم المواقع</h3>
+                                <p>اختبارات في لغات البرمجة وتقنيات تطوير الويب وتصميم واجهات المستخدم</p>
+                                <button class="btn start-exam" data-department="programming">بدء الامتحان</button>
+                            </div>
+                        </div>
+                        
+                        <div class="department-card">
+                            <div class="department-img" style="background-color: #e74c3c;">تصميم الفوتوشوب والصور</div>
+                            <div class="department-content">
+                                <h3>تصميم الفوتوشوب والصور</h3>
+                                <p>اختبارات في برامج التصميم الجرافيكي ومعالجة الصور وتقنيات التصميم</p>
+                                <button class="btn start-exam" data-department="photoshop">بدء الامتحان</button>
+                            </div>
+                        </div>
+                        
+                        <div class="department-card">
+                            <div class="department-img" style="background-color: #2ecc71;">تصميم الفيديوهات</div>
+                            <div class="department-content">
+                                <h3>تصميم الفيديوهات</h3>
+                                <p>اختبارات في برامج تحرير الفيديو وتقنيات المونتاج والإخراج السينمائي</p>
+                                <button class="btn start-exam" data-department="video">بدء الامتحان</button>
+                            </div>
+                        </div>
+                        
+                        <div class="department-card">
+                            <div class="department-img" style="background-color: #f39c12;">الإعلانات الممولة</div>
+                            <div class="department-content">
+                                <h3>الإعلانات الممولة</h3>
+                                <p>اختبارات في استراتيجيات التسويق الرقمي وتحليل الحملات الإعلانية</p>
+                                <button class="btn start-exam" data-department="ads">بدء الامتحان</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exam" class="section">
+            <div class="container">
+                <div id="exam-container" class="exam-container">
+                    <div class="exam-header">
+                        <div class="department-name" id="department-name">برمجة وتصميم المواقع</div>
+                        <div class="timer" id="timer">30</div>
+                        <div class="question-counter" id="question-counter">السؤال 1 من 10</div>
+                    </div>
+                    
+                    <div class="question">
+                        <div class="question-text" id="question-text">ما هي لغة البرمجة المستخدمة في تطوير تطبيقات الويب؟</div>
+                        <ul class="options" id="options">
+                            <li>Python</li>
+                            <li>JavaScript</li>
+                            <li>C++</li>
+                            <li>Java</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="navigation-buttons">
+                        <button class="btn btn-secondary" id="prev-btn">السابق</button>
+                        <button class="btn" id="next-btn">التالي</button>
+                        <button class="btn btn-success" id="submit-btn">إنهاء الامتحان</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="results" class="section">
+            <div class="container">
+                <div id="results-container" class="results-container">
+                    <div class="thank-you-message">
+                        <h3>شكراً لك على إكمال الاختبار</h3>
+                        <p>سيتم تأكيد النتيجة من قبل المهندس مصطفى</p>
+                    </div>
+                    
+                    <div class="completion-info">
+                        <h4>تم إرسال إجاباتك بنجاح</h4>
+                        <p>سيتم مراجعة إجاباتك وإعلامك بالنتيجة لاحقاً</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn" id="back-to-departments">العودة إلى التخصصات</button>
+                        <button class="btn btn-warning" id="retry-exam">إعادة الامتحان</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="section">
+            <div class="container">
+                <div id="admin-panel" class="admin-panel">
+                    <div id="admin-login" class="admin-login">
+                        <h2>دخول المسؤول</h2>
+                        <div class="form-group">
+                            <label for="admin-password">كلمة المرور:</label>
+                            <input type="password" id="admin-password" class="form-control" placeholder="أدخل كلمة المرور">
+                        </div>
+                        <button class="btn" id="login-btn">دخول</button>
+                        <p id="login-message" style="margin-top: 15px; color: var(--accent-color); display: none;">كلمة المرور غير صحيحة</p>
+                    </div>
+                    
+                    <div id="admin-content" class="admin-content">
+                        <h2 style="text-align: center; margin-bottom: 20px;">لوحة تحكم المسؤول</h2>
+                        
+                        <div class="admin-actions">
+                            <button class="btn" id="view-results">عرض النتائج</button>
+                            <button class="btn" id="manage-questions">إدارة الأسئلة</button>
+                            <button class="btn" id="export-data">تصدير البيانات</button>
+                            <button class="btn btn-danger" id="clear-all-btn">حذف جميع النتائج</button>
+                            <button class="btn btn-warning" id="logout-btn">تسجيل الخروج</button>
+                        </div>
+                        
+                        <div class="admin-section" id="results-section">
+                            <h3>نتائج الامتحانات</h3>
+                            <div id="admin-results">
+                                <!-- سيتم ملء النتائج هنا -->
+                            </div>
+                        </div>
+                        
+                        <div class="admin-section" id="questions-section" style="display: none;">
+                            <h3>إدارة الأسئلة</h3>
+                            <div id="questions-management">
+                                <p>هنا يمكنك إدارة الأسئلة والإجابات لكل قسم</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>جميع الحقوق محفوظة &copy; 2023 موقع الامتحانات المتخصصة</p>
+        </div>
+    </footer>
+
+    <script>
+        // بيانات الامتحانات (10 أسئلة لكل قسم)
+        const examsData = {
+            programming: {
+                name: "برمجة وتصميم المواقع",
+                questions: [
+                    {
+                        text: "ما هي لغة البرمجة المستخدمة في تطوير تطبيقات الويب؟",
+                        options: ["Python", "JavaScript", "C++", "Java"],
+                        correct: 1,
+                        time: 30
+                    },
+                    {
+                        text: "ما هي المكتبة المستخدمة لبناء واجهات المستخدم في JavaScript؟",
+                        options: ["jQuery", "React", "Lodash", "Moment.js"],
+                        correct: 1,
+                        time: 45
+                    },
+                    {
+                        text: "ما هو البروتوكول المستخدم لنقل صفحات الويب؟",
+                        options: ["FTP", "HTTP", "SMTP", "TCP"],
+                        correct: 1,
+                        time: 25
+                    },
+                    {
+                        text: "ما هي لغة الترميز المستخدمة لإنشاء هيكل صفحات الويب؟",
+                        options: ["CSS", "JavaScript", "HTML", "PHP"],
+                        correct: 2,
+                        time: 30
+                    },
+                    {
+                        text: "أي من هذه اللغات تستخدم لتطوير تطبيقات Android؟",
+                        options: ["Swift", "Kotlin", "C#", "Ruby"],
+                        correct: 1,
+                        time: 35
+                    },
+                    {
+                        text: "ما هي قاعدة البيانات الأكثر استخدامًا مع تطبيقات الويب؟",
+                        options: ["MongoDB", "MySQL", "SQLite", "PostgreSQL"],
+                        correct: 1,
+                        time: 40
+                    },
+                    {
+                        text: "ما هو الإطار (Framework) المستخدم لتطوير الويب بلغة Python؟",
+                        options: ["Laravel", "Django", "Spring", "Express"],
+                        correct: 1,
+                        time: 35
+                    },
+                    {
+                        text: "ما هي لغة البرمجة التي تستخدم لاستعلام قواعد البيانات؟",
+                        options: ["SQL", "NoSQL", "Java", "Python"],
+                        correct: 0,
+                        time: 30
+                    },
+                    {
+                        text: "ما هي التقنية المستخدمة لتصميم وتنسيق صفحات الويب؟",
+                        options: ["HTML", "JavaScript", "CSS", "PHP"],
+                        correct: 2,
+                        time: 25
+                    },
+                    {
+                        text: "ما هو نظام التحكم في الإصدارات الأكثر شيوعًا؟",
+                        options: ["SVN", "Git", "Mercurial", "CVS"],
+                        correct: 1,
+                        time: 30
+                    }
+                ]
+            },
+            photoshop: {
+                name: "تصميم الفوتوشوب والصور",
+                questions: [
+                    {
+                        text: "ما هو الاختصار لفتح نافذة الطبقات في Photoshop؟",
+                        options: ["Ctrl+L", "F7", "Ctrl+J", "Ctrl+Shift+N"],
+                        correct: 1,
+                        time: 30
+                    },
+                    {
+                        text: "ما هي الأداة المستخدمة لإزالة العيوب من الصور؟",
+                        options: ["Clone Stamp", "Brush Tool", "Eraser", "Healing Brush"],
+                        correct: 3,
+                        time: 40
+                    },
+                    {
+                        text: "ما هو دقة الصورة المناسبة للطباعة؟",
+                        options: ["72 PPI", "150 PPI", "300 PPI", "600 PPI"],
+                        correct: 2,
+                        time: 25
+                    },
+                    {
+                        text: "ما هو نمط الطبقة الذي يسمح برؤية الطبقات السفلية؟",
+                        options: ["Multiply", "Overlay", "Normal", "Screen"],
+                        correct: 0,
+                        time: 35
+                    },
+                    {
+                        text: "ما هي الأداة المستخدمة لإنشاء تحديدات دقيقة؟",
+                        options: ["Lasso Tool", "Magic Wand", "Pen Tool", "Quick Selection"],
+                        correct: 2,
+                        time: 45
+                    },
+                    {
+                        text: "ما هو الاختصار لدمج الطبقات المرئية؟",
+                        options: ["Ctrl+E", "Ctrl+Shift+E", "Ctrl+Alt+E", "Ctrl+Shift+Alt+E"],
+                        correct: 1,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو تنسيق الملف الذي يدعم الشفافية؟",
+                        options: ["JPG", "BMP", "PNG", "GIF"],
+                        correct: 2,
+                        time: 25
+                    },
+                    {
+                        text: "ما هي الأداة المستخدمة لتعديل الألوان في الصورة؟",
+                        options: ["Levels", "Curves", "Hue/Saturation", "جميع ما سبق"],
+                        correct: 3,
+                        time: 35
+                    },
+                    {
+                        text: "ما هو الفرشاة المستخدمة لإنشاء حواف ناعمة؟",
+                        options: ["Hard Round", "Soft Round", "Airbrush", "Texture Brush"],
+                        correct: 1,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو الاختصار لإنشاء طبقة جديدة؟",
+                        options: ["Ctrl+N", "Ctrl+Shift+N", "Ctrl+Alt+N", "F5"],
+                        correct: 1,
+                        time: 25
+                    }
+                ]
+            },
+            video: {
+                name: "تصميم الفيديوهات",
+                questions: [
+                    {
+                        text: "ما هو البرنامج الأكثر استخدامًا لتحرير الفيديو؟",
+                        options: ["After Effects", "Premiere Pro", "Final Cut Pro", "DaVinci Resolve"],
+                        correct: 1,
+                        time: 35
+                    },
+                    {
+                        text: "ما هو الإطار في الثانية (FPS) القياسي للفيديو؟",
+                        options: ["24", "30", "60", "جميع ما سبق"],
+                        correct: 3,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو الدقة الشائعة للفيديو عالي الجودة (HD)?",
+                        options: ["720p", "1080p", "1440p", "4K"],
+                        correct: 1,
+                        time: 25
+                    },
+                    {
+                        text: "ما هو الكودك المستخدم لضغط الفيديو مع الحفاظ على الجودة؟",
+                        options: ["H.264", "MPEG-2", "AVI", "MOV"],
+                        correct: 0,
+                        time: 40
+                    },
+                    {
+                        text: "ما هو البرنامج المستخدم للرسوم المتحركة والمؤثرات البصرية؟",
+                        options: ["Premiere Pro", "After Effects", "Audition", "Illustrator"],
+                        correct: 1,
+                        time: 35
+                    },
+                    {
+                        text: "ما هو الاختصار لقص مقطع فيديو في معظم برامج التحرير؟",
+                        options: ["C", "V", "B", "S"],
+                        correct: 0,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو تنسيق الفيديو الأكثر شيوعًا للويب؟",
+                        options: ["AVI", "MOV", "MP4", "WMV"],
+                        correct: 2,
+                        time: 25
+                    },
+                    {
+                        text: "ما هي الخاصية التي تتحكم في سرعة الفيديو؟",
+                        options: ["Time Remapping", "Time Stretch", "Time Warp", "Time Scale"],
+                        correct: 3,
+                        time: 35
+                    },
+                    {
+                        text: "ما هو البرنامج المستخدم لتحرير الصوت؟",
+                        options: ["Premiere Pro", "After Effects", "Audition", "Photoshop"],
+                        correct: 2,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو الدقة المعيارية للفيديو عالي الدقة (4K)?",
+                        options: ["1920x1080", "2560x1440", "3840x2160", "4096x2160"],
+                        correct: 2,
+                        time: 35
+                    }
+                ]
+            },
+            ads: {
+                name: "الإعلانات الممولة",
+                questions: [
+                    {
+                        text: "ما هي منصة الإعلانات الأكثر شيوعًا للشركات الصغيرة؟",
+                        options: ["Google Ads", "Facebook Ads", "LinkedIn Ads", "Twitter Ads"],
+                        correct: 1,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو الـ CTR في الإعلانات؟",
+                        options: ["Cost Per Click", "Click Through Rate", "Conversion Rate", "Cost Per Action"],
+                        correct: 1,
+                        time: 35
+                    },
+                    {
+                        text: "ما هو أفضل وقت لنشر الإعلانات على فيسبوك؟",
+                        options: ["الصباح الباكر", "منتصف النهار", "المساء", "يعتمد على الجمهور المستهدف"],
+                        correct: 3,
+                        time: 40
+                    },
+                    {
+                        text: "ما هو الـ SEO؟",
+                        options: ["Social Engagement Optimization", "Search Engine Optimization", "Sales Enablement Operations", "Strategic Engagement Objectives"],
+                        correct: 1,
+                        time: 30
+                    },
+                    {
+                        text: "ما هي الكلمة الرئيسية (Keyword) في التسويق الرقمي؟",
+                        options: ["كلمة تستخدم في البحث", "كلمة سرية", "كلمة في العنوان", "كلمة في الوصف"],
+                        correct: 0,
+                        time: 25
+                    },
+                    {
+                        text: "ما هو الـ CPM في الإعلانات؟",
+                        options: ["Cost Per Million", "Cost Per Minute", "Cost Per Mile", "Cost Per Message"],
+                        correct: 2,
+                        time: 35
+                    },
+                    {
+                        text: "ما هي أفضل طريقة لزيادة التفاعل مع الإعلان؟",
+                        options: ["استخدام صور جذابة", "كتابة نصوص مقنعة", "استهداف الجمهور المناسب", "جميع ما سبق"],
+                        correct: 3,
+                        time: 30
+                    },
+                    {
+                        text: "ما هو الـ A/B Testing؟",
+                        options: ["اختبار إصدارين مختلفين من الإعلان", "اختبار سرعة التحميل", "اختبار الألوان", "اختبار الصور"],
+                        correct: 0,
+                        time: 35
+                    },
+                    {
+                        text: "ما هو الـ ROI في التسويق؟",
+                        options: ["Return On Investment", "Rate Of Interest", "Return On Innovation", "Rate Of Interaction"],
+                        correct: 0,
+                        time: 30
+                    },
+                    {
+                        text: "ما هي منصة الإعلانات التابعة (Affiliate) الأكثر شيوعًا؟",
+                        options: ["Amazon Associates", "Google AdSense", "Facebook Audience Network", "Twitter Amplify"],
+                        correct: 0,
+                        time: 35
+                    }
+                ]
+            }
+        };
+
+        // كلمة سر المسؤول
+        const ADMIN_PASSWORD = "2004";
+
+        // متغيرات عامة
+        let currentExam = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let timerInterval = null;
+        let timeLeft = 0;
+        let examResults = JSON.parse(localStorage.getItem('examResults')) || [];
+
+        // عناصر DOM
+        const sections = document.querySelectorAll('.section');
+        const examContainer = document.getElementById('exam-container');
+        const departmentName = document.getElementById('department-name');
+        const timerElement = document.getElementById('timer');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionsList = document.getElementById('options');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const startExamButtons = document.querySelectorAll('.start-exam');
+        const resultsContainer = document.getElementById('results-container');
+        const backToDepartmentsBtn = document.getElementById('back-to-departments');
+        const retryExamBtn = document.getElementById('retry-exam');
+        const adminPanel = document.getElementById('admin-panel');
+        const adminLogin = document.getElementById('admin-login');
+        const adminContent = document.getElementById('admin-content');
+        const adminPassword = document.getElementById('admin-password');
+        const loginBtn = document.getElementById('login-btn');
+        const loginMessage = document.getElementById('login-message');
+        const viewResultsBtn = document.getElementById('view-results');
+        const manageQuestionsBtn = document.getElementById('manage-questions');
+        const exportDataBtn = document.getElementById('export-data');
+        const clearAllBtn = document.getElementById('clear-all-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const resultsSection = document.getElementById('results-section');
+        const questionsSection = document.getElementById('questions-section');
+        const adminResults = document.getElementById('admin-results');
+        const startLearningBtn = document.getElementById('start-learning');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        // تهيئة التطبيق
+        function initApp() {
+            setupEventListeners();
+            showSection('home');
+        }
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            // التنقل بين الأقسام
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetSection = this.getAttribute('data-section');
+                    showSection(targetSection);
+                    
+                    // تحديث حالة الروابط النشطة
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // بدء التعلم
+            startLearningBtn.addEventListener('click', function() {
+                showSection('departments');
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                document.querySelector('[data-section="departments"]').classList.add('active');
+            });
+
+            // بدء الامتحان
+            startExamButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const department = this.getAttribute('data-department');
+                    startExam(department);
+                });
+            });
+
+            // التنقل بين الأسئلة
+            nextBtn.addEventListener('click', nextQuestion);
+            prevBtn.addEventListener('click', prevQuestion);
+            submitBtn.addEventListener('click', submitExam);
+
+            // النتائج
+            backToDepartmentsBtn.addEventListener('click', function() {
+                showSection('departments');
+                navLinks.forEach(nav => nav.classList.remove('active'));
+                document.querySelector('[data-section="departments"]').classList.add('active');
+            });
+
+            retryExamBtn.addEventListener('click', function() {
+                if (currentExam) {
+                    startExam(currentExam.name.toLowerCase().replace(/ /g, ''));
+                }
+            });
+
+            // نظام الإدارة
+            loginBtn.addEventListener('click', adminLoginHandler);
+            viewResultsBtn.addEventListener('click', function() {
+                resultsSection.style.display = 'block';
+                questionsSection.style.display = 'none';
+                loadAdminResults();
+            });
+            manageQuestionsBtn.addEventListener('click', function() {
+                resultsSection.style.display = 'none';
+                questionsSection.style.display = 'block';
+            });
+            exportDataBtn.addEventListener('click', exportData);
+            clearAllBtn.addEventListener('click', clearAllResults);
+            logoutBtn.addEventListener('click', adminLogout);
+        }
+
+        // إظهار القسم المحدد
+        function showSection(sectionId) {
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            
+            // إظهار لوحة الإدارة إذا كانت القسم المطلوب
+            if (sectionId === 'admin') {
+                adminPanel.style.display = 'block';
+            } else {
+                adminPanel.style.display = 'none';
+            }
+        }
+
+        // بدء الامتحان
+        function startExam(department) {
+            currentExam = examsData[department];
+            if (!currentExam) return;
+            
+            currentQuestionIndex = 0;
+            userAnswers = new Array(currentExam.questions.length).fill(null);
+            
+            showSection('exam');
+            departmentName.textContent = currentExam.name;
+            loadQuestion(currentQuestionIndex);
+        }
+
+        // تحميل السؤال
+        function loadQuestion(index) {
+            if (!currentExam || index < 0 || index >= currentExam.questions.length) return;
+            
+            const question = currentExam.questions[index];
+            
+            questionCounter.textContent = `السؤال ${index + 1} من ${currentExam.questions.length}`;
+            questionText.textContent = question.text;
+            
+            optionsList.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const li = document.createElement('li');
+                li.textContent = option;
+                li.addEventListener('click', () => selectOption(i));
+                
+                if (userAnswers[index] === i) {
+                    li.classList.add('selected');
+                }
+                
+                optionsList.appendChild(li);
+            });
+            
+            startTimer(question.time);
+            updateNavigationButtons(index);
+        }
+
+        // اختيار الإجابة
+        function selectOption(optionIndex) {
+            const options = optionsList.querySelectorAll('li');
+            options.forEach(option => option.classList.remove('selected'));
+            options[optionIndex].classList.add('selected');
+            userAnswers[currentQuestionIndex] = optionIndex;
+        }
+
+        // بدء المؤقت
+        function startTimer(seconds) {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timeLeft = seconds;
+            timerElement.textContent = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    nextQuestion();
+                }
+            }, 1000);
+        }
+
+        // تحديث أزرار التنقل
+        function updateNavigationButtons(index) {
+            prevBtn.style.display = index === 0 ? 'none' : 'block';
+            
+            if (index === currentExam.questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'block';
+            } else {
+                nextBtn.style.display = 'block';
+                submitBtn.style.display = 'none';
+            }
+        }
+
+        // السؤال التالي
+        function nextQuestion() {
+            if (currentQuestionIndex < currentExam.questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        // السؤال السابق
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion(currentQuestionIndex);
+            }
+        }
+
+        // إنهاء الامتحان
+        function submitExam() {
+            let score = 0;
+            userAnswers.forEach((answer, index) => {
+                if (answer === currentExam.questions[index].correct) {
+                    score++;
+                }
+            });
+            
+            const result = {
+                department: currentExam.name,
+                score: score,
+                total: currentExam.questions.length,
+                date: new Date().toLocaleString('ar-EG'),
+                answers: userAnswers.slice()
+            };
+            
+            examResults.push(result);
+            localStorage.setItem('examResults', JSON.stringify(examResults));
+            
+            showResults();
+        }
+
+        // عرض النتائج (بدون إظهار النتيجة للمستخدم)
+        function showResults() {
+            showSection('results');
+            // لا نعرض النتيجة للمستخدم، فقط رسالة تأكيد
+        }
+
+        // تسجيل دخول المسؤول
+        function adminLoginHandler() {
+            if (adminPassword.value === ADMIN_PASSWORD) {
+                adminLogin.style.display = 'none';
+                adminContent.style.display = 'block';
+                loginMessage.style.display = 'none';
+                loadAdminResults();
+            } else {
+                loginMessage.style.display = 'block';
+            }
+        }
+
+        // تحميل نتائج المسؤول
+        function loadAdminResults() {
+            adminResults.innerHTML = '';
+            
+            if (examResults.length === 0) {
+                adminResults.innerHTML = '<p>لا توجد نتائج حتى الآن</p>';
+                return;
+            }
+            
+            // إنشاء جدول النتائج
+            const table = document.createElement('table');
+            table.className = 'results-table';
+            
+            // رأس الجدول
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>م</th>
+                    <th>التخصص</th>
+                    <th>النتيجة</th>
+                    <th>التاريخ</th>
+                    <th>الإجراءات</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            
+            // جسم الجدول
+            const tbody = document.createElement('tbody');
+            
+            examResults.forEach((result, index) => {
+                const row = document.createElement('tr');
+                
+                // حساب النسبة المئوية
+                const percentage = (result.score / result.total) * 100;
+                let grade = '';
+                let color = '';
+                
+                if (percentage >= 90) {
+                    grade = 'ممتاز';
+                    color = '#2ecc71';
+                } else if (percentage >= 70) {
+                    grade = 'جيد جداً';
+                    color = '#3498db';
+                } else if (percentage >= 50) {
+                    grade = 'مقبول';
+                    color = '#f39c12';
+                } else {
+                    grade = 'ضعيف';
+                    color = '#e74c3c';
+                }
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${result.department}</td>
+                    <td style="color: ${color}; font-weight: bold;">
+                        ${result.score}/${result.total} (${grade})
+                    </td>
+                    <td>${result.date}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn view-btn" onclick="viewAnswers(${index})">
+                                عرض
+                            </button>
+                            <button class="action-btn delete-btn" onclick="deleteResult(${index})">
+                                حذف
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            adminResults.appendChild(table);
+        }
+
+        // عرض الإجابات (للمسؤول فقط)
+        function viewAnswers(index) {
+            const result = examResults[index];
+            let answersHtml = '<h4>تفاصيل الإجابات:</h4><ul style="text-align: right; list-style: none; padding: 0;">';
+            
+            result.answers.forEach((answer, i) => {
+                const question = examsData[result.department.toLowerCase().replace(/ /g, '')].questions[i];
+                const isCorrect = answer === question.correct;
+                
+                answersHtml += `
+                    <li style="margin-bottom: 15px; padding: 10px; border-right: 3px solid ${isCorrect ? '#2ecc71' : '#e74c3c'}; background: #f8f9fa;">
+                        <strong>السؤال ${i + 1}:</strong> ${question.text}<br>
+                        <strong>إجابة المستخدم:</strong> ${answer !== null ? question.options[answer] : 'لم يُجب'}<br>
+                        <strong>الإجابة الصحيحة:</strong> ${question.options[question.correct]}<br>
+                        <span style="color: ${isCorrect ? '#2ecc71' : '#e74c3c'}; font-weight: bold;">
+                            ${isCorrect ? '✓ صحيحة' : '✗ خاطئة'}
+                        </span>
+                    </li>
+                `;
+            });
+            
+            answersHtml += '</ul>';
+            
+            // استخدام alert بدلاً من alertify لتجنب الحاجة لمكتبة خارجية
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 8px; max-width: 90%; max-height: 80%; overflow-y: auto;">
+                    <h3 style="text-align: center; margin-bottom: 15px;">تفاصيل الإجابات</h3>
+                    <div>${answersHtml}</div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="display: block; margin: 20px auto 0; padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        إغلاق
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // حذف نتيجة محددة
+        function deleteResult(index) {
+            if (confirm('هل أنت متأكد من حذف هذه النتيجة؟')) {
+                examResults.splice(index, 1);
+                localStorage.setItem('examResults', JSON.stringify(examResults));
+                loadAdminResults();
+            }
+        }
+
+        // حذف جميع النتائج
+        function clearAllResults() {
+            if (confirm('هل أنت متأكد من حذف جميع النتائج؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                examResults = [];
+                localStorage.setItem('examResults', JSON.stringify(examResults));
+                loadAdminResults();
+            }
+        }
+
+        // تصدير البيانات
+        function exportData() {
+            const dataStr = JSON.stringify(examResults, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'exam_results.json';
+            link.click();
+        }
+
+        // تسجيل خروج المسؤول
+        function adminLogout() {
+            adminLogin.style.display = 'block';
+            adminContent.style.display = 'none';
+            adminPassword.value = '';
+        }
+
+        // بدء التطبيق
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
