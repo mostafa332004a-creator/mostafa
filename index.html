@@ -850,22 +850,61 @@
             background: #c82333;
         }
         
-        .connection-status {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 1002;
-            background: #28a745;
-            color: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        .add-question-form, .edit-question-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
         }
         
-        .connection-status.offline {
-            background: #dc3545;
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .option-input {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .option-input-field {
+            flex: 1;
+        }
+        
+        .correct-option {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .grade-checkboxes {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .grade-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .auto-save-notice {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
         }
         
         .save-status {
@@ -884,6 +923,162 @@
         
         .save-status.show {
             opacity: 1;
+        }
+        
+        /* تنسيقات جديدة للإجابة الصحيحة */
+        .correct-answer-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .correct-answer-checkbox {
+            width: 22px;
+            height: 22px;
+            accent-color: #28a745;
+            cursor: pointer;
+        }
+        
+        .correct-answer-label {
+            font-weight: bold;
+            color: #2e7d32;
+            font-size: 16px;
+        }
+        
+        .option-with-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            transition: all 0.3s;
+        }
+        
+        .option-with-checkbox:hover {
+            border-color: #bdbdbd;
+            background: #f9f9f9;
+        }
+        
+        .option-with-checkbox.correct {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+        }
+        
+        .option-text {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.3s;
+            min-height: 50px;
+            resize: vertical;
+        }
+        
+        .option-text:focus {
+            outline: none;
+            border-color: #159895;
+            box-shadow: 0 0 0 3px rgba(21, 152, 149, 0.1);
+        }
+        
+        .option-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: #1a5f7a;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        /* تنسيقات خاصة بالأسئلة */
+        .question-input-section {
+            margin-bottom: 25px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: #1a5f7a;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .section-title-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a5f7a;
+        }
+        
+        .options-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .option-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option-title {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .correct-badge {
+            background: #4caf50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1002;
+            background: #28a745;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .connection-status.offline {
+            background: #dc3545;
         }
     </style>
 </head>
@@ -1055,6 +1250,9 @@
                 
                 <div class="admin-tabs">
                     <button class="admin-tab active" onclick="openAdminTab(event, 'students')">الطلاب والنتائج</button>
+                    <button class="admin-tab" onclick="openAdminTab(event, 'questions')">إدارة الأسئلة</button>
+                    <button class="admin-tab" onclick="openAdminTab(event, 'addQuestion')">إضافة سؤال جديد</button>
+                    <button class="admin-tab" onclick="openAdminTab(event, 'backup')">النسخ الاحتياطي</button>
                 </div>
                 
                 <div id="studentsTab" class="admin-tab-content active">
@@ -1075,6 +1273,168 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <div id="questionsTab" class="admin-tab-content">
+                    <h3>إدارة الأسئلة</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>اختر المادة:</label>
+                            <select id="subjectFilter" onchange="filterQuestions()">
+                                <option value="all">جميع المواد</option>
+                                <option value="قراءة">القراءة</option>
+                                <option value="نحو">النحو</option>
+                                <option value="نصوص">النصوص</option>
+                                <option value="قصة">القصة</option>
+                                <option value="إملاء">الإملاء</option>
+                                <option value="بلاغة">البلاغة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>اختر الصف:</label>
+                            <select id="gradeFilter" onchange="filterQuestions()">
+                                <option value="all">جميع الصفوف</option>
+                                <option value="first">الصف الأول</option>
+                                <option value="second">الصف الثاني</option>
+                                <option value="third">الصف الثالث</option>
+                            </select>
+                        </div>
+                    </div>
+                    <table class="questions-table">
+                        <thead>
+                            <tr>
+                                <th>السؤال</th>
+                                <th>المادة</th>
+                                <th>الصفوف</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionsTableBody">
+                            <!-- سيتم ملء البيانات ديناميكيًا -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="addQuestionTab" class="admin-tab-content">
+                    <h3>إضافة سؤال جديد</h3>
+                    <div class="add-question-form">
+                        <div class="question-input-section">
+                            <div class="section-header">
+                                <div class="section-icon">1</div>
+                                <div class="section-title-text">معلومات السؤال الأساسية</div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>المادة:</label>
+                                    <select id="newQuestionSubject">
+                                        <option value="قراءة">القراءة</option>
+                                        <option value="نحو">النحو</option>
+                                        <option value="نصوص">النصوص</option>
+                                        <option value="قصة">القصة</option>
+                                        <option value="إملاء">الإملاء</option>
+                                        <option value="بلاغة">البلاغة</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>الصفوف:</label>
+                                    <div class="grade-checkboxes">
+                                        <label class="grade-checkbox">
+                                            <input type="checkbox" id="gradeFirst" value="first" checked> الصف الأول
+                                        </label>
+                                        <label class="grade-checkbox">
+                                            <input type="checkbox" id="gradeSecond" value="second" checked> الصف الثاني
+                                        </label>
+                                        <label class="grade-checkbox">
+                                            <input type="checkbox" id="gradeThird" value="third" checked> الصف الثالث
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>نص السؤال:</label>
+                                <textarea id="newQuestionText" rows="4" placeholder="اكتب نص السؤال هنا..." style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="question-input-section">
+                            <div class="section-header">
+                                <div class="section-icon">2</div>
+                                <div class="section-title-text">خيارات الإجابة</div>
+                            </div>
+                            <div class="options-section">
+                                <div class="option-header">
+                                    <div class="option-title">اختر الإجابة الصحيحة:</div>
+                                    <div class="correct-badge">الإجابة الصحيحة</div>
+                                </div>
+                                
+                                <div class="option-with-checkbox" id="option1Container">
+                                    <div class="option-number">1</div>
+                                    <input type="radio" name="correctOption" value="0" class="correct-answer-checkbox" id="correctOption1" checked>
+                                    <textarea id="option1" placeholder="اكتب الخيار الأول هنا..." class="option-text" rows="2"></textarea>
+                                </div>
+                                
+                                <div class="option-with-checkbox" id="option2Container">
+                                    <div class="option-number">2</div>
+                                    <input type="radio" name="correctOption" value="1" class="correct-answer-checkbox" id="correctOption2">
+                                    <textarea id="option2" placeholder="اكتب الخيار الثاني هنا..." class="option-text" rows="2"></textarea>
+                                </div>
+                                
+                                <div class="option-with-checkbox" id="option3Container">
+                                    <div class="option-number">3</div>
+                                    <input type="radio" name="correctOption" value="2" class="correct-answer-checkbox" id="correctOption3">
+                                    <textarea id="option3" placeholder="اكتب الخيار الثالث هنا..." class="option-text" rows="2"></textarea>
+                                </div>
+                                
+                                <div class="option-with-checkbox" id="option4Container">
+                                    <div class="option-number">4</div>
+                                    <input type="radio" name="correctOption" value="3" class="correct-answer-checkbox" id="correctOption4">
+                                    <textarea id="option4" placeholder="اكتب الخيار الرابع هنا..." class="option-text" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="text-align: center; margin-top: 25px;">
+                            <button type="button" onclick="addNewQuestion()" class="btn btn-success" style="padding: 15px 30px; font-size: 18px;">إضافة السؤال</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="backupTab" class="admin-tab-content">
+                    <h3>النسخ الاحتياطي والاستعادة</h3>
+                    <div class="add-question-form">
+                        <div class="form-group">
+                            <label>تصدير البيانات:</label>
+                            <button type="button" onclick="exportData()" class="btn btn-success">تصدير جميع البيانات</button>
+                            <p style="margin-top: 10px; color: #666;">قم بحفظ ملف JSON هذا كنسخة احتياطية</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>استيراد البيانات:</label>
+                            <input type="file" id="importFile" accept=".json" style="margin-bottom: 10px;">
+                            <button type="button" onclick="importData()" class="btn btn-warning">استيراد البيانات</button>
+                            <p style="margin-top: 10px; color: #666;">تحذير: سيتم استبدال جميع البيانات الحالية</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>مسح جميع البيانات:</label>
+                            <button type="button" onclick="clearAllData()" class="btn btn-danger">مسح الكل</button>
+                            <p style="margin-top: 10px; color: #666;">تحذير: لا يمكن التراجع عن هذا الإجراء</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل السؤال -->
+    <div id="editQuestionModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">تعديل السؤال</h3>
+                <button class="close-btn" onclick="closeEditQuestionModal()">×</button>
+            </div>
+            <div class="edit-question-form">
+                <!-- محتوى تعديل السؤال -->
             </div>
         </div>
     </div>
@@ -1142,6 +1502,12 @@
             answers: [],
             timeLeft: 60, // 1 دقيقة بالثواني
             timer: null
+        };
+        
+        // متغيرات لتعديل الأسئلة
+        let currentEditingQuestion = {
+            subject: '',
+            index: -1
         };
         
         // انتظار تحميل Firebase ثم تحميل البيانات
@@ -1474,6 +1840,7 @@
         function openAdminPanel() {
             document.getElementById('adminPanel').style.display = 'flex';
             loadStudentsData();
+            loadQuestionsData();
         }
         
         // إغلاق لوحة التحكم
@@ -1537,6 +1904,139 @@
             });
         }
         
+        // تحميل بيانات الأسئلة
+        function loadQuestionsData() {
+            const tbody = document.getElementById('questionsTableBody');
+            tbody.innerHTML = '';
+            
+            let hasQuestions = false;
+            
+            for (const subject in questionsData) {
+                if (questionsData[subject].length > 0) {
+                    questionsData[subject].forEach((question, index) => {
+                        hasQuestions = true;
+                        const gradeTitles = {
+                            'first': 'أول',
+                            'second': 'ثاني', 
+                            'third': 'ثالث'
+                        };
+                        
+                        const gradesText = question.grades.map(g => `الصف ${gradeTitles[g]}`).join('، ');
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${question.question.substring(0, 50)}...</td>
+                            <td>${subject}</td>
+                            <td>${gradesText}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn edit-btn" onclick="editQuestion('${subject}', ${index})">تعديل</button>
+                                    <button class="action-btn delete-btn" onclick="deleteQuestion('${subject}', ${index})">حذف</button>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            }
+            
+            if (!hasQuestions) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">لا توجد أسئلة</td></tr>';
+            }
+        }
+        
+        // تصفية الأسئلة حسب المادة والصف
+        function filterQuestions() {
+            const subject = document.getElementById('subjectFilter').value;
+            const grade = document.getElementById('gradeFilter').value;
+            const rows = document.querySelectorAll('#questionsTableBody tr');
+            
+            rows.forEach(row => {
+                const rowSubject = row.cells[1].textContent;
+                const rowGrades = row.cells[2].textContent;
+                
+                const subjectMatch = subject === 'all' || rowSubject === subject;
+                const gradeMatch = grade === 'all' || rowGrades.includes(grade === 'first' ? 'أول' : 
+                                 grade === 'second' ? 'ثاني' : 'ثالث');
+                
+                if (subjectMatch && gradeMatch) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // إضافة سؤال جديد
+        function addNewQuestion() {
+            const subject = document.getElementById('newQuestionSubject').value;
+            const questionText = document.getElementById('newQuestionText').value;
+            const option1 = document.getElementById('option1').value;
+            const option2 = document.getElementById('option2').value;
+            const option3 = document.getElementById('option3').value;
+            const option4 = document.getElementById('option4').value;
+            
+            // الحصول على الإجابة الصحيحة
+            const correctOption = document.querySelector('input[name="correctOption"]:checked').value;
+            
+            // جمع الصفوف المختارة
+            const selectedGrades = [];
+            if (document.getElementById('gradeFirst').checked) selectedGrades.push('first');
+            if (document.getElementById('gradeSecond').checked) selectedGrades.push('second');
+            if (document.getElementById('gradeThird').checked) selectedGrades.push('third');
+            
+            if (!questionText || !option1 || !option2 || !option3 || !option4) {
+                alert('يرجى ملء جميع الحقول');
+                return;
+            }
+            
+            if (selectedGrades.length === 0) {
+                alert('يرجى اختيار صف واحد على الأقل');
+                return;
+            }
+            
+            const newQuestion = {
+                question: questionText,
+                options: [option1, option2, option3, option4],
+                correct: parseInt(correctOption),
+                grades: selectedGrades
+            };
+            
+            if (!questionsData[subject]) {
+                questionsData[subject] = [];
+            }
+            
+            questionsData[subject].push(newQuestion);
+            
+            // الحفظ
+            saveAllData();
+            
+            // إعادة تعيين النموذج
+            document.getElementById('newQuestionText').value = '';
+            document.getElementById('option1').value = '';
+            document.getElementById('option2').value = '';
+            document.getElementById('option3').value = '';
+            document.getElementById('option4').value = '';
+            
+            alert('تم إضافة السؤال بنجاح وحفظه تلقائياً في السحابة');
+            loadQuestionsData();
+        }
+        
+        // تعديل سؤال
+        function editQuestion(subject, index) {
+            // سيتم تنفيذ هذه الدالة لاحقاً
+            alert('ميزة تعديل السؤال قيد التطوير');
+        }
+        
+        // حذف سؤال
+        function deleteQuestion(subject, index) {
+            if (confirm('هل أنت متأكد من حذف هذا السؤال؟')) {
+                questionsData[subject].splice(index, 1);
+                saveAllData();
+                loadQuestionsData();
+            }
+        }
+        
         // حذف طالب
         function deleteStudent(index) {
             if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
@@ -1546,12 +2046,112 @@
             }
         }
         
+        // تصدير البيانات
+        function exportData() {
+            const allData = {
+                students: studentsData,
+                questions: questionsData,
+                settings: {
+                    examTime: currentExam.timeLeft,
+                    lastSave: new Date().toISOString()
+                },
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(allData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `backup_موقع_الأستاذ_رشاد_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            showSaveStatus('📤 تم التصدير بنجاح');
+        }
+        
+        // استيراد البيانات
+        function importData() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('يرجى اختيار ملف للاستيراد');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    
+                    // التحقق من صحة البيانات
+                    if (!importedData.students || !importedData.questions) {
+                        throw new Error('ملف غير صالح');
+                    }
+                    
+                    // استيراد البيانات
+                    studentsData = importedData.students;
+                    questionsData = importedData.questions;
+                    
+                    // حفظ البيانات المستوردة
+                    saveAllData();
+                    
+                    showSaveStatus('📥 تم الاستيراد بنجاح');
+                    
+                    // إعادة تحميل البيانات
+                    loadStudentsData();
+                    loadQuestionsData();
+                    fileInput.value = '';
+                    
+                } catch (error) {
+                    showSaveStatus('❌ خطأ في الاستيراد', true);
+                    console.error('خطأ في الاستيراد:', error);
+                }
+            };
+            
+            reader.onerror = function() {
+                showSaveStatus('❌ خطأ في قراءة الملف', true);
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // مسح جميع البيانات
+        function clearAllData() {
+            if (confirm('⚠️ هل أنت متأكد من مسح جميع البيانات؟ لا يمكن التراجع عن هذا الإجراء!')) {
+                studentsData = [];
+                questionsData = {
+                    'قراءة': [], 'نحو': [], 'نصوص': [], 'قصة': [], 'إملاء': [], 'بلاغة': []
+                };
+                
+                // مسح البيانات المحلية
+                localStorage.removeItem('studentsData');
+                localStorage.removeItem('questionsData');
+                localStorage.removeItem('siteSettings');
+                
+                showSaveStatus('🗑️ تم مسح جميع البيانات');
+                
+                // إعادة تحميل البيانات في الواجهة
+                setTimeout(() => {
+                    loadStudentsData();
+                    loadQuestionsData();
+                }, 1000);
+            }
+        }
+        
         // إغلاق النوافذ عند النقر خارجها
         window.onclick = function(event) {
             const studentNamePage = document.getElementById('studentNamePage');
             const examPage = document.getElementById('examPage');
             const resultPage = document.getElementById('resultPage');
             const adminPanel = document.getElementById('adminPanel');
+            const editQuestionModal = document.getElementById('editQuestionModal');
             
             if (event.target == studentNamePage) {
                 studentNamePage.style.display = "none";
@@ -1564,6 +2164,9 @@
             }
             if (event.target == adminPanel) {
                 adminPanel.style.display = "none";
+            }
+            if (event.target == editQuestionModal) {
+                editQuestionModal.style.display = "none";
             }
         }
     </script>
