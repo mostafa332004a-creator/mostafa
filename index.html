@@ -222,6 +222,23 @@
             color: white;
             z-index: 999;
         }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            color: white;
+            z-index: 9999;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: #22c55e; }
+        .toast.error { background: #ef4444; }
+        .toast.info { background: #3b82f6; }
     </style>
 </head>
 <body>
@@ -231,6 +248,9 @@
         <div class="loading-spinner"></div>
         <div class="text-white text-sm">⏳ جاري الاتصال بقاعدة البيانات...</div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
     <!-- Status -->
     <div id="fbStatus" class="firebase-status">🟢 متصل</div>
@@ -608,6 +628,7 @@
         let cur = null,
             curId = null;
         let curCli = null;
+        let isDataLoaded = false;
         const $ = s => document.querySelector(s);
         const $$ = s => document.querySelectorAll(s);
 
@@ -622,6 +643,17 @@
         };
 
         // =============================================
+        // TOAST NOTIFICATION
+        // =============================================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast ' + type;
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // =============================================
         // REAL-TIME LISTENERS
         // =============================================
         function startListeners() {
@@ -634,7 +666,7 @@
                 console.log('👥 Team updated:', data.team.length);
                 if (cur?.role === 'admin') {
                     renderTeam();
-                    renderCli(); // Clients need team data
+                    renderCli();
                     populateTeamChatSelect();
                     renderTeamMembersList();
                 }
@@ -642,7 +674,13 @@
                     updateEmployeeSalary();
                     loadEmpClients();
                 }
-            }, error => console.error('Team error:', error));
+                isDataLoaded = true;
+                document.getElementById('loading')?.classList.add('hidden');
+            }, error => {
+                console.error('Team error:', error);
+                document.getElementById('fbStatus').className = 'firebase-status offline';
+                document.getElementById('fbStatus').textContent = '🔴 غير متصل';
+            });
 
             // Clients
             db.collection('clients').onSnapshot(snapshot => {
@@ -651,14 +689,16 @@
                 console.log('👤 Clients updated:', data.clients.length);
                 if (cur?.role === 'admin') {
                     renderCli();
-                    renderTeam(); // Team needs client data for commissions
+                    renderTeam();
                     renderCliList();
                 }
                 if (cur?.role === 'employee') {
                     updateEmployeeSalary();
                     loadEmpClients();
                 }
-            }, error => console.error('Clients error:', error));
+            }, error => {
+                console.error('Clients error:', error);
+            });
 
             // Requests
             db.collection('requests').onSnapshot(snapshot => {
@@ -666,9 +706,6 @@
                 snapshot.forEach(doc => data.requests.push({ id: doc.id, ...doc.data() }));
                 console.log('📋 Requests updated:', data.requests.length);
                 if (cur?.role === 'admin') renderReq();
-                if (cur?.role === 'employee') {
-                    // Update employee requests view
-                }
                 if (cur?.role === 'client') {
                     const tb = $('#cReqs');
                     if (tb) {
@@ -687,7 +724,9 @@
                         });
                     }
                 }
-            }, error => console.error('Requests error:', error));
+            }, error => {
+                console.error('Requests error:', error);
+            });
 
             // Request Types
             db.collection('requestTypes').onSnapshot(snapshot => {
@@ -703,7 +742,9 @@
                         ).join('');
                     }
                 }
-            }, error => console.error('Types error:', error));
+            }, error => {
+                console.error('Types error:', error);
+            });
 
             // Employee Buttons
             db.collection('employeeButtons').onSnapshot(snapshot => {
@@ -715,7 +756,9 @@
                     renderEmployeeQuickBtns();
                     renderEmployeeSidebarBtns();
                 }
-            }, error => console.error('Buttons error:', error));
+            }, error => {
+                console.error('Buttons error:', error);
+            });
 
             // Salary Requests
             db.collection('salaryRequests').onSnapshot(snapshot => {
@@ -723,7 +766,9 @@
                 snapshot.forEach(doc => data.salaryRequests.push({ id: doc.id, ...doc.data() }));
                 console.log('💰 Salary updated:', data.salaryRequests.length);
                 if (cur?.role === 'admin') renderSal();
-            }, error => console.error('Salary error:', error));
+            }, error => {
+                console.error('Salary error:', error);
+            });
 
             // Chats
             db.collection('chats').onSnapshot(snapshot => {
@@ -733,16 +778,13 @@
                 });
                 console.log('💬 Chats updated:', Object.keys(data.chats).length);
                 refreshAllChats();
-            }, error => console.error('Chats error:', error));
-
-            // Hide loading
-            setTimeout(() => {
-                document.getElementById('loading')?.classList.add('hidden');
-            }, 2000);
+            }, error => {
+                console.error('Chats error:', error);
+            });
         }
 
         // =============================================
-        // RENDER FUNCTIONS (All original functions preserved)
+        // RENDER FUNCTIONS
         // =============================================
 
         function renderReq() {
@@ -1162,12 +1204,18 @@
         function setUserInactive(type, id) { updateUserStatus(type, id, 'inactive'); }
 
         // =============================================
-        // LOGIN
+        // LOGIN - FIXED!
         // =============================================
         function handleLogin() {
-            const n = $('#ln').value.trim(),
-                p = $('#lp').value.trim();
+            const n = $('#ln').value.trim();
+            const p = $('#lp').value.trim();
 
+            if (!n || !p) {
+                showToast('⚠️ يرجى إدخال اسم المستخدم وكلمة السر', 'error');
+                return;
+            }
+
+            // ADMIN LOGIN
             if (n.toLowerCase() === 'mostafa' && p === '332004') {
                 cur = { role: 'admin' };
                 show('admin');
@@ -1182,31 +1230,49 @@
                 populateTeamChatSelect();
                 renderTeamMembersList();
                 loadTeamChatAdmin();
+                showToast('✅ مرحبا بك في لوحة التحكم', 'success');
                 return;
             }
 
-            const e = data.team.find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
-            if (e) {
-                if (e.status === 'inactive') { alert('⚠️ هذا الموظف غير نشط حالياً. يرجى التواصل مع الإدارة.'); return; }
-                setUserActive('employee', e.id);
-                cur = { role: 'employee', ...e };
-                curId = e.id;
+            // Check if data is loaded
+            if (!isDataLoaded) {
+                showToast('⏳ جاري تحميل البيانات، حاول مرة أخرى', 'info');
+                return;
+            }
+
+            // EMPLOYEE LOGIN
+            const emp = data.team.find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
+            if (emp) {
+                if (emp.status === 'inactive') {
+                    showToast('⚠️ هذا الموظف غير نشط حالياً', 'error');
+                    return;
+                }
+                setUserActive('employee', emp.id);
+                cur = { role: 'employee', ...emp };
+                curId = emp.id;
                 show('employee');
                 initEmp();
+                showToast('✅ مرحبا بك ' + emp.name, 'success');
                 return;
             }
 
-            const c = data.clients.find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
-            if (c) {
-                if (c.status === 'inactive') { alert('⚠️ هذا العميل غير نشط حالياً. يرجى التواصل مع الإدارة.'); return; }
-                setUserActive('client', c.id);
-                cur = { role: 'client', ...c };
-                curId = c.id;
+            // CLIENT LOGIN
+            const client = data.clients.find(c => c.name && c.name.toLowerCase() === n.toLowerCase() && c.password === p);
+            if (client) {
+                if (client.status === 'inactive') {
+                    showToast('⚠️ هذا العميل غير نشط حالياً', 'error');
+                    return;
+                }
+                setUserActive('client', client.id);
+                cur = { role: 'client', ...client };
+                curId = client.id;
                 show('client');
                 initCli();
+                showToast('✅ مرحبا بك ' + client.name, 'success');
                 return;
             }
 
+            showToast('❌ اسم المستخدم أو كلمة السر غير صحيحة', 'error');
             $('#err').classList.remove('hidden');
             setTimeout(() => $('#err').classList.add('hidden'), 3000);
         }
@@ -1271,7 +1337,7 @@
         }
 
         // =============================================
-        // WINDOW FUNCTIONS (All original functions)
+        // WINDOW FUNCTIONS
         // =============================================
         window.setDeliveryDate = (id, val) => {
             db.collection('requests').doc(id).update({ deliveryDate: val })
@@ -1346,6 +1412,7 @@
                 </div>`,
                 () => {
                     db.collection('team').doc(id).update({ name: e1.value, password: e2.value })
+                        .then(() => showToast('✅ تم التعديل', 'success'))
                         .catch(err => console.error('Error:', err));
                 },
                 'team', id
@@ -1355,6 +1422,7 @@
         window.delTeam = (id) => {
             if (!confirm('هل تريد حذف هذا الموظف؟')) return;
             db.collection('team').doc(id).delete()
+                .then(() => showToast('✅ تم الحذف', 'success'))
                 .catch(err => console.error('Error:', err));
         };
 
@@ -1368,6 +1436,7 @@
                 </div>`,
                 () => {
                     db.collection('clients').doc(id).update({ name: c1.value, password: c2.value })
+                        .then(() => showToast('✅ تم التعديل', 'success'))
                         .catch(err => console.error('Error:', err));
                 },
                 'client', id
@@ -1387,6 +1456,7 @@
         window.delCli = (id) => {
             if (!confirm('هل تريد حذف هذا العميل؟')) return;
             db.collection('clients').doc(id).delete()
+                .then(() => showToast('✅ تم الحذف', 'success'))
                 .catch(err => console.error('Error:', err));
         };
 
@@ -1400,6 +1470,7 @@
                 </div>`,
                 () => {
                     db.collection('requestTypes').doc(id).update({ name: t1.value, price: Number(t2.value) })
+                        .then(() => showToast('✅ تم التعديل', 'success'))
                         .catch(err => console.error('Error:', err));
                 },
                 'type', id
@@ -1409,6 +1480,7 @@
         window.delType = (id) => {
             if (!confirm('هل تريد حذف هذه الخدمة؟')) return;
             db.collection('requestTypes').doc(id).delete()
+                .then(() => showToast('✅ تم الحذف', 'success'))
                 .catch(err => console.error('Error:', err));
         };
 
@@ -1434,7 +1506,8 @@
                         action: b2.value,
                         value: b3.value,
                         location: b4.value
-                    }).catch(err => console.error('Error:', err));
+                    }).then(() => showToast('✅ تم التعديل', 'success'))
+                        .catch(err => console.error('Error:', err));
                 },
                 'btn', id
             );
@@ -1443,11 +1516,13 @@
         window.delBtn = (id) => {
             if (!confirm('هل تريد حذف هذا الزر؟')) return;
             db.collection('employeeButtons').doc(id).delete()
+                .then(() => showToast('✅ تم الحذف', 'success'))
                 .catch(err => console.error('Error:', err));
         };
 
         window.apSal = (id) => {
             db.collection('salaryRequests').doc(id).update({ status: 'approved' })
+                .then(() => showToast('✅ تم تأكيد الراتب', 'success'))
                 .catch(err => console.error('Error:', err));
         };
 
@@ -1457,6 +1532,7 @@
             db.collection('chats').doc(chatId).set({ messages: [] })
                 .then(() => {
                     if (curCli === clientId) loadCliChat();
+                    showToast('✅ تم مسح المحادثة', 'success');
                 })
                 .catch(err => console.error('Error clearing chat:', err));
         }
@@ -1703,10 +1779,10 @@
                 if (er3) er3.value = '';
                 if (er4) er4.value = '';
                 if (er5) er5.value = '';
-                alert('✅ تم إرسال الطلب');
+                showToast('✅ تم إرسال الطلب', 'success');
             } catch (error) {
                 console.error('Error adding request:', error);
-                alert('❌ حدث خطأ أثناء إرسال الطلب');
+                showToast('❌ حدث خطأ أثناء إرسال الطلب', 'error');
             }
         });
 
@@ -1715,19 +1791,19 @@
         // =============================================
         $('#eReqSal')?.addEventListener('click', () => {
             const total = parseInt($('#eSal')?.textContent || '0') || 0;
-            if (total === 0) { alert('⚠️ لا توجد عمولة مستحقة حالياً'); return; }
+            if (total === 0) { showToast('⚠️ لا توجد عمولة مستحقة حالياً', 'error'); return; }
             db.collection('salaryRequests').add({
                 employeeId: curId,
                 employeeName: cur?.name || '',
                 amount: total,
                 status: 'pending'
-            }).then(() => alert('✅ تم إرسال طلب الراتب'))
-                .catch(err => { console.error('Error requesting salary:', err);
-                    alert('❌ حدث خطأ'); });
+            }).then(() => showToast('✅ تم إرسال طلب الراتب', 'success'))
+                .catch(err => { console.error('Error:', err);
+                    showToast('❌ حدث خطأ', 'error'); });
         });
 
         // =============================================
-        // ADMIN ADD BUTTONS
+        // ADMIN ADD BUTTONS - FIXED!
         // =============================================
         $('#aReq')?.addEventListener('click', () => {
             openM('➕ طلب جديد',
@@ -1760,7 +1836,10 @@
                         if (r3) r3.value = '';
                         if (r4) r4.value = '';
                         if (r5) r5.value = '';
-                    }).catch(err => console.error('Error:', err));
+                        showToast('✅ تم إضافة الطلب', 'success');
+                        closeM();
+                    }).catch(err => { console.error('Error:', err);
+                        showToast('❌ حدث خطأ', 'error'); });
                 }
             );
         });
@@ -1774,15 +1853,22 @@
                 () => {
                     const e1 = $('#e1'),
                         e2 = $('#e2');
+                    if (!e1.value.trim() || !e2.value.trim()) {
+                        showToast('⚠️ يرجى ملء جميع الحقول', 'error');
+                        return;
+                    }
                     db.collection('team').add({
-                        name: e1?.value || '',
-                        password: e2?.value || '',
+                        name: e1.value.trim(),
+                        password: e2.value.trim(),
                         status: 'inactive',
                         lastActive: new Date().toISOString()
                     }).then(() => {
-                        if (e1) e1.value = '';
-                        if (e2) e2.value = '';
-                    }).catch(err => console.error('Error:', err));
+                        e1.value = '';
+                        e2.value = '';
+                        showToast('✅ تم إضافة الموظف بنجاح!', 'success');
+                        closeM();
+                    }).catch(err => { console.error('Error:', err);
+                        showToast('❌ حدث خطأ: ' + err.message, 'error'); });
                 }
             );
         });
@@ -1790,23 +1876,30 @@
         $('#aCli')?.addEventListener('click', () => {
             openM('➕ عميل جديد',
                 `<div class="space-y-2">
-                    <input id="c1" placeholder="اسم الشركة" class="w-full border p-2 rounded-xl">
+                    <input id="c1" placeholder="اسم العميل" class="w-full border p-2 rounded-xl">
                     <input id="c2" placeholder="كلمة السر" class="w-full border p-2 rounded-xl">
                 </div>`,
                 () => {
                     const c1 = $('#c1'),
                         c2 = $('#c2');
+                    if (!c1.value.trim() || !c2.value.trim()) {
+                        showToast('⚠️ يرجى ملء جميع الحقول', 'error');
+                        return;
+                    }
                     db.collection('clients').add({
-                        name: c1?.value || '',
-                        password: c2?.value || '',
+                        name: c1.value.trim(),
+                        password: c2.value.trim(),
                         assignedEmployeeId: '',
                         commission: 0,
                         status: 'inactive',
                         lastActive: new Date().toISOString()
                     }).then(() => {
-                        if (c1) c1.value = '';
-                        if (c2) c2.value = '';
-                    }).catch(err => console.error('Error:', err));
+                        c1.value = '';
+                        c2.value = '';
+                        showToast('✅ تم إضافة العميل بنجاح!', 'success');
+                        closeM();
+                    }).catch(err => { console.error('Error:', err);
+                        showToast('❌ حدث خطأ: ' + err.message, 'error'); });
                 }
             );
         });
@@ -1820,13 +1913,20 @@
                 () => {
                     const t1 = $('#t1'),
                         t2 = $('#t2');
+                    if (!t1.value.trim() || !t2.value) {
+                        showToast('⚠️ يرجى ملء جميع الحقول', 'error');
+                        return;
+                    }
                     db.collection('requestTypes').add({
-                        name: t1?.value || '',
-                        price: Number(t2?.value) || 0
+                        name: t1.value.trim(),
+                        price: Number(t2.value) || 0
                     }).then(() => {
-                        if (t1) t1.value = '';
-                        if (t2) t2.value = '';
-                    }).catch(err => console.error('Error:', err));
+                        t1.value = '';
+                        t2.value = '';
+                        showToast('✅ تم إضافة الخدمة', 'success');
+                        closeM();
+                    }).catch(err => { console.error('Error:', err);
+                        showToast('❌ حدث خطأ', 'error'); });
                 }
             );
         });
@@ -1850,17 +1950,24 @@
                         b2 = $('#b2'),
                         b3 = $('#b3'),
                         b4 = $('#b4');
+                    if (!b1.value.trim() || !b3.value.trim()) {
+                        showToast('⚠️ يرجى ملء جميع الحقول', 'error');
+                        return;
+                    }
                     db.collection('employeeButtons').add({
-                        label: b1?.value || '',
-                        action: b2?.value || 'link',
-                        value: b3?.value || '',
-                        location: b4?.value || 'header'
+                        label: b1.value.trim(),
+                        action: b2.value,
+                        value: b3.value.trim(),
+                        location: b4.value
                     }).then(() => {
-                        if (b1) b1.value = '';
-                        if (b2) b2.value = '';
-                        if (b3) b3.value = '';
-                        if (b4) b4.value = '';
-                    }).catch(err => console.error('Error:', err));
+                        b1.value = '';
+                        b2.value = 'link';
+                        b3.value = '';
+                        b4.value = 'header';
+                        showToast('✅ تم إضافة الزر', 'success');
+                        closeM();
+                    }).catch(err => { console.error('Error:', err);
+                        showToast('❌ حدث خطأ', 'error'); });
                 }
             );
         });
@@ -1873,7 +1980,7 @@
             startListeners();
             setTimeout(() => {
                 document.getElementById('loading')?.classList.add('hidden');
-            }, 3000);
+            }, 5000);
         });
 
         // Update last active
@@ -1905,6 +2012,7 @@
         console.log('🔥 Firebase connected! Real-time sync is active.');
         console.log('🔑 Admin: mostafa / 332004');
         console.log('📱 Open on multiple devices - all changes sync instantly!');
+        console.log('👥 To add employees/clients, login as admin first.');
     </script>
 </body>
 </html>
