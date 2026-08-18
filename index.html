@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>شركة آسر للدعاية والإعلان</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics-compat.js"></script>
+
+<style>
+  body{font-family:'Cairo',sans-serif;background:#f0f4f8}
+  .chat-bubble{max-width:75%;padding:8px 12px;border-radius:14px;margin:4px 0;font-size:13px;line-height:1.4;word-break:break-word}
+  .from-admin{background:linear-gradient(135deg,#0ea5e9,#0284c7);color:white;margin-right:auto;box-shadow:0 2px 4px rgba(2,132,199,.2)}
+  .from-employee{background:#e0f2fe;color:#075985;margin-left:auto;border:1px solid #bae6fd}
+  .from-client{background:#fef3c7;color:#92400e;margin-right:auto;border:1px solid #fde68a}
+  .from-system{background:#f1f5f9;color:#334155;margin:auto;border:1px solid #e2e8f0;font-style:italic;text-align:center}
+  .glass{background:rgba(255,255,255,.95);backdrop-filter:blur(12px)}
+  .hidden{display:none}
+  ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+  .chat-img{max-width:200px;max-height:200px;border-radius:12px;margin:4px 0;border:1px solid #e2e8f0;cursor:pointer}
+  .commission-input{width:80px;border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;font-size:13px;background:white}
+  .commission-input:focus{outline:2px solid #3b82f6;border-color:transparent}
+  .quick-btn{background:white;border:1px solid #e2e8f0;border-radius:10px;padding:4px 12px;font-size:12px;font-weight:600;color:#1e293b;transition:all 0.2s;cursor:pointer;white-space:nowrap}
+  .quick-btn:hover{background:#f1f5f9;border-color:#94a3b8;transform:translateY(-1px)}
+  .notes-cell{max-width:150px;font-size:12px;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .action-btn{padding:2px 8px;border-radius:6px;font-size:12px;margin:0 2px;cursor:pointer;border:none;transition:all 0.2s}
+  .action-btn:hover{transform:scale(1.05)}
+  .edit-btn{background:#dbeafe;color:#1d4ed8}
+  .edit-btn:hover{background:#bfdbfe}
+  .del-btn{background:#fee2e2;color:#dc2626}
+  .del-btn:hover{background:#fecaca}
+  .transfer-btn{background:#d1fae5;color:#065f46}
+  .transfer-btn:hover{background:#a7f3d0}
+  .chat-select{background:white;border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;font-size:13px;color:#1e293b;outline:none}
+  .chat-select:focus{border-color:#3b82f6;ring:2px solid #3b82f6}
+  .date-input{background:white;border:1px solid #e2e8f0;border-radius:6px;padding:2px 6px;font-size:12px;color:#1e293b;width:120px}
+  .date-input:focus{outline:2px solid #3b82f6;border-color:transparent}
+  .status-badge{padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block}
+  .status-active{background:#d1fae5;color:#065f46}
+  .status-inactive{background:#f1f5f9;color:#64748b}
+  .toggle-btn{padding:2px 10px;border-radius:12px;font-size:11px;cursor:pointer;border:none;transition:all 0.2s}
+  .toggle-active{background:#d1fae5;color:#065f46}
+  .toggle-active:hover{background:#a7f3d0}
+  .toggle-inactive{background:#f1f5f9;color:#64748b}
+  .toggle-inactive:hover{background:#e2e8f0}
+  .last-active{font-size:10px;color:#94a3b8}
+  .team-member-item{padding:4px 8px;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:6px}
+  .team-member-item:hover{background:#f1f5f9}
+  .member-status{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .member-status.active{background:#22c55e}
+  .member-status.inactive{background:#94a3b8}
+  .loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999}
+  .loading-spinner{width:50px;height:50px;border:4px solid #f3f3f3;border-top:4px solid #3b82f6;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  .firebase-status{position:fixed;bottom:10px;right:10px;background:#22c55e;color:white;padding:4px 12px;border-radius:20px;font-size:10px;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading" class="loading-overlay"><div class="loading-spinner"></div></div>
+
+<!-- Firebase Status -->
+<div id="fbStatus" class="firebase-status">🟢 متصل</div>
+
+<!-- LOGIN -->
+<div id="login" class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-20 right-20 w-72 h-72 bg-blue-400 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-20 left-20 w-96 h-96 bg-cyan-400 rounded-full blur-3xl"></div>
+  </div>
+  <div class="glass rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative z-10 border border-white/20">
+    <div class="text-center mb-8">
+      <div class="w-20 h-20 mx-auto bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 mb-4 transform rotate-3 hover:rotate-6 transition">
+        <span class="text-white text-3xl font-black">آ</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-800 mb-1">مرحبا في شركة آسر للدعاية والاعلان</h1>
+      <p class="text-slate-500 text-sm">نظام إدارة متكامل للطلبات والعملاء</p>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-slate-600 mb-1 block font-semibold">اسم المستخدم</label>
+        <input id="ln" placeholder="اكتب اسمك" class="w-full border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-slate-50/50">
+      </div>
+      <div>
+        <label class="text-xs text-slate-600 mb-1 block font-semibold">الرقم السري</label>
+        <input id="lp" type="password" placeholder="••••••••" class="w-full border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition bg-slate-50/50">
+      </div>
+      <button id="btnIn" class="w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white py-3 rounded-xl font-bold shadow-lg shadow-slate-900/25 hover:shadow-xl hover:-translate-y-0.5 transition">تسجيل الدخول</button>
+      <p id="err" class="text-red-500 text-xs text-center hidden bg-red-50 py-2 rounded-lg">بيانات الدخول غير صحيحة</p>
+    </div>
+    <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+      <p class="text-[11px] text-slate-400">© 2026 شركة آسر للدعاية والإعلان - جميع الحقوق محفوظة</p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="hidden min-h-screen bg-slate-50">
+  <header class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center font-bold">آ</div>
+        <div><h1 class="font-bold">لوحة تحكم آسر</h1><p class="text-xs opacity-70">الإدارة الرئيسية</p></div>
+      </div>
+      <button onclick="logout()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm transition">خروج</button>
+    </div>
+  </header>
+  <nav class="bg-white shadow-sm sticky top-0 z-20 border-b">
+    <div class="max-w-7xl mx-auto p-2 flex gap-1 overflow-x-auto">
+      <button data-t="req" class="tab px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold whitespace-nowrap">الطلبات</button>
+      <button data-t="team" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">الفريق</button>
+      <button data-t="clients" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">العملاء</button>
+      <button data-t="types" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">الأنواع</button>
+      <button data-t="btns" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">أزرار</button>
+      <button data-t="sal" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">الرواتب</button>
+      <button data-t="cchat" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">شات العملاء</button>
+      <button data-t="teamchat" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">شات الفريق</button>
+    </div>
+  </nav>
+  <main class="max-w-7xl mx-auto p-4">
+    <section id="s-req"><div class="bg-white rounded-2xl shadow-sm border p-5"><div class="flex justify-between items-center mb-4"><h2 class="font-bold text-lg text-slate-800">إدارة الطلبات</h2><button id="aReq" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow">+ طلب جديد</button></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b border-slate-200 text-slate-600"><th class="p-3 text-right font-semibold">العميل</th><th class="p-3 text-right font-semibold">النوع</th><th class="p-3 text-right font-semibold">المبلغ</th><th class="p-3 text-right font-semibold">الموظف</th><th class="p-3 text-right font-semibold">تاريخ الطلب</th><th class="p-3 text-right font-semibold">تاريخ التسليم</th><th class="p-3 text-right font-semibold">ملاحظات</th><th class="p-3 text-right font-semibold">الدفع</th><th class="p-3"></th></tr></thead><tbody id="tbReq" class="divide-y"></tbody></table></div></div></section>
+    <section id="s-team" class="hidden"><div class="bg-white rounded-2xl shadow-sm border p-5"><div class="flex justify-between mb-4"><h2 class="font-bold text-lg">فريق العمل</h2><button id="aEmp" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm">+ موظف</button></div><table class="w-full text-sm"><thead><tr class="border-b"><th class="p-2 text-right">الاسم</th><th class="p-2 text-right">الباسورد</th><th class="p-2 text-right">الراتب الإجمالي</th><th class="p-2 text-right">الحالة</th><th class="p-2 text-right">آخر نشاط</th><th class="p-2 text-right"></th></tr></thead><tbody id="tbTeam" class="divide-y"></tbody></table></div></section>
+    <section id="s-clients" class="hidden"><div class="bg-white rounded-2xl shadow-sm border p-5"><div class="flex justify-between mb-4"><h2 class="font-bold text-lg">العملاء</h2><button id="aCli" class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm">+ عميل</button></div><table class="w-full text-sm"><thead><tr class="border-b"><th class="p-2 text-right">الاسم</th><th class="p-2 text-right">الباسورد</th><th class="p-2 text-right">الموظف المسؤول</th><th class="p-2 text-right">عمولة الموظف</th><th class="p-2 text-right">الحالة</th><th class="p-2 text-right">آخر نشاط</th><th class="p-2 text-right"></th></tr></thead><tbody id="tbCli" class="divide-y"></tbody></table></div></section>
+    <section id="s-types" class="hidden"><div class="bg-white rounded-2xl shadow-sm border p-5"><div class="flex justify-between mb-4"><h2 class="font-bold text-lg">أنواع الخدمات</h2><button id="aTyp" class="bg-orange-500 text-white px-4 py-2 rounded-xl text-sm">+ نوع</button></div><div id="gTyp" class="grid md:grid-cols-3 gap-3"></div></div></section>
+    <section id="s-btns" class="hidden"><div class="bg-white rounded-2xl shadow-sm border p-5"><div class="flex justify-between mb-4"><h2 class="font-bold text-lg">أزرار الموظفين</h2><button id="aBtn" class="bg-teal-600 text-white px-4 py-2 rounded-xl text-sm">+ زر</button></div><div id="gBtn" class="grid md:grid-cols-3 gap-3"></div></div></section>
+    <section id="s-sal" class="hidden"><div class="bg-white rounded-2xl shadow-sm border p-5"><h2 class="font-bold text-lg mb-4">طلبات الرواتب</h2><table class="w-full text-sm"><thead><tr class="border-b"><th class="p-2 text-right">الموظف</th><th class="p-2 text-right">المبلغ</th><th class="p-2 text-right">الحالة</th><th></th></tr></thead><tbody id="tbSal" class="divide-y"></tbody></table></div></section>
+    <section id="s-cchat" class="hidden"><div class="bg-white rounded-2xl shadow-sm border overflow-hidden"><div class="grid grid-cols-4 h-[65vh]"><div class="col-span-1 border-l bg-slate-50 p-3 overflow-y-auto"><h3 class="font-bold text-sm mb-2">العملاء</h3><div id="cliList" class="space-y-1"></div></div><div class="col-span-3 flex flex-col"><div id="cHead" class="p-3 border-b bg-slate-50 font-semibold flex justify-between items-center">اختر عميلاً</div><div id="cBox" class="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50 to-white"></div><div class="p-3 border-t flex gap-2"><input id="cIn" class="flex-1 border rounded-xl px-3 py-2 text-sm" placeholder="اكتب رسالة..."><button id="cSend" class="bg-blue-600 text-white px-4 rounded-xl text-sm">إرسال</button><button id="cImg" class="bg-blue-600 text-white px-3 rounded-xl text-sm">📎</button><button id="cClearChat" class="bg-red-600 text-white px-3 rounded-xl text-sm">🗑️ مسح</button><input type="file" id="cFileInput" accept="image/*" class="hidden"></div></div></div></div></section>
+    <section id="s-teamchat" class="hidden"><div class="bg-white rounded-2xl shadow-sm border overflow-hidden h-[70vh] flex flex-col"><div class="p-4 border-b bg-gradient-to-r from-slate-800 to-slate-700 text-white flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <h3 class="font-bold">💬 شات الفريق</h3>
+          <select id="teamChatSelect" class="chat-select text-slate-800">
+            <option value="all">👥 المجموعة العامة</option>
+          </select>
+        </div>
+        <button id="clearTeamChat" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition">🗑️ مسح المحادثة</button>
+      </div>
+      <div class="flex-1 flex overflow-hidden">
+        <div id="teamMembersList" class="w-48 bg-slate-50 border-l overflow-y-auto p-2 flex-shrink-0">
+          <div class="text-xs font-bold text-slate-500 mb-2">👥 أعضاء الفريق</div>
+        </div>
+        <div class="flex-1 flex flex-col">
+          <div id="teamChatBox" class="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50 to-white"></div>
+          <div class="p-3 border-t flex gap-2 bg-white"><input id="teamChatIn" class="flex-1 border rounded-xl px-3 py-2 text-sm" placeholder="اكتب رسالة..."><button id="teamChatSend" class="bg-slate-800 text-white px-4 rounded-xl text-sm">إرسال</button><button id="teamChatImg" class="bg-slate-800 text-white px-3 rounded-xl text-sm">📎</button><input type="file" id="teamFileInput" accept="image/*" class="hidden"></div>
+        </div>
+      </div>
+    </div></section>
+  </main>
+</div>
+
+<!-- EMPLOYEE -->
+<div id="employee" class="hidden min-h-screen bg-slate-50">
+  <header class="bg-gradient-to-r from-blue-700 to-blue-600 text-white shadow">
+    <div class="max-w-6xl mx-auto p-3">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">👤</div>
+          <div>
+            <div class="text-xs opacity-80">مرحبا</div>
+            <div class="font-bold" id="eName"></div>
+          </div>
+        </div>
+        <button onclick="logout()" class="text-sm bg-white/10 px-3 py-1 rounded-lg">خروج</button>
+      </div>
+      <div id="eQuickBtns" class="flex flex-wrap gap-1 mt-2 pt-2 border-t border-white/20"></div>
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 space-y-4">
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <div class="text-xs text-amber-700">إجمالي العمولات (مجموع عمولات عملائي)</div>
+            <div class="text-2xl font-bold text-amber-900"><span id="eSal"></span> ج.م</div>
+            <div class="text-xs text-amber-700 mt-1">عدد العملاء: <span id="eCliCount">0</span></div>
+          </div>
+          <button id="eReqSal" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow">طلب الراتب</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-sm border p-5"><h3 class="font-bold mb-3">إضافة طلب جديد</h3><form id="eForm" class="grid grid-cols-2 gap-3"><input id="er1" placeholder="اسم العميل" class="border rounded-xl p-2.5 text-sm" required><input id="er2" placeholder="اسم الشركة" class="border rounded-xl p-2.5 text-sm"><select id="er3" class="border rounded-xl p-2.5 text-sm col-span-2"></select><input id="er5" type="date" class="border rounded-xl p-2.5 text-sm col-span-2" value=""><textarea id="er4" placeholder="ملاحظات (اختياري)" class="border rounded-xl p-2.5 text-sm col-span-2" rows="2"></textarea><button class="col-span-2 bg-blue-600 text-white py-2.5 rounded-xl font-semibold">إرسال الطلب</button></form></div>
+    </div>
+    <div class="space-y-4">
+      <div class="bg-white rounded-2xl shadow-sm border p-4"><h3 class="font-bold text-sm mb-2">أدوات سريعة</h3><div id="eBtns" class="grid gap-2"></div></div>
+      <div class="bg-white rounded-2xl shadow-sm border p-4"><h3 class="font-bold text-sm mb-2">محادثة الإدارة</h3><div id="eChatA" class="h-32 overflow-y-auto bg-slate-50 rounded-xl p-2 text-xs mb-2"></div><div class="flex gap-1"><input id="eInA" class="flex-1 border rounded-lg px-2 py-1.5 text-xs"><button id="eSendA" class="bg-blue-600 text-white px-3 rounded-lg text-xs">ارسال</button><button id="eImgA" class="bg-blue-600 text-white px-2 rounded-lg text-xs">📎</button><input type="file" id="eFileInputA" accept="image/*" class="hidden"></div></div>
+      <div class="bg-white rounded-2xl shadow-sm border p-4"><h3 class="font-bold text-sm mb-2">عملائي</h3><select id="eCliSel" class="w-full border rounded-lg p-1.5 text-xs mb-2"></select><div id="eChatC" class="h-28 overflow-y-auto bg-slate-50 rounded-xl p-2 text-xs mb-2"></div><div class="flex gap-1"><input id="eInC" class="flex-1 border rounded-lg px-2 py-1.5 text-xs"><button id="eSendC" class="bg-blue-600 text-white px-3 rounded-lg text-xs">ارسال</button><button id="eImgC" class="bg-blue-600 text-white px-2 rounded-lg text-xs">📎</button><input type="file" id="eFileInputC" accept="image/*" class="hidden"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- CLIENT -->
+<div id="client" class="hidden min-h-screen bg-slate-50">
+  <header class="bg-gradient-to-r from-emerald-700 to-teal-600 text-white p-4 shadow">
+    <div class="max-w-4xl mx-auto flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">🏢</div><div><div class="text-xs opacity-80">أهلاً بك</div><div class="font-bold" id="cName"></div></div></div><button onclick="logout()" class="bg-white/10 px-3 py-1.5 rounded-lg text-sm">خروج</button></div>
+  </header>
+  <main class="max-w-4xl mx-auto p-4 space-y-4">
+    <div class="bg-white rounded-2xl shadow-sm border p-5"><h2 class="font-bold mb-3 flex items-center gap-2">📋 طلباتي</h2><div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="border-b text-slate-600"><th class="p-2 text-right">الخدمة</th><th class="p-2 text-right">المبلغ</th><th class="p-2 text-right">المسؤول</th><th class="p-2 text-right">تاريخ التسليم</th><th class="p-2 text-right">الحالة</th></tr></thead><tbody id="cReqs" class="divide-y"></tbody></table></div></div>
+    <div class="bg-white rounded-2xl shadow-sm border p-5"><h2 class="font-bold mb-3 flex items-center gap-2">💬 تواصل معنا</h2><div id="cChat" class="h-64 overflow-y-auto bg-gradient-to-b from-slate-50 to-white rounded-xl p-3 border mb-3"></div><div class="flex gap-2"><input id="cInp" class="flex-1 border rounded-xl px-3 py-2 text-sm" placeholder="اكتب رسالتك..."><button id="cSendBtn" class="bg-emerald-600 text-white px-5 rounded-xl text-sm font-semibold">إرسال</button><button id="cImgBtn" class="bg-emerald-600 text-white px-3 rounded-xl text-sm">📎</button><input type="file" id="cFileInputClient" accept="image/*" class="hidden"></div></div>
+  </main>
+</div>
+
+<div id="modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4"><div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl"><h3 id="mt" class="font-bold text-lg mb-3"></h3><div id="mb"></div><div class="flex justify-end gap-2 mt-4"><button id="mc" class="px-4 py-2 bg-slate-100 rounded-xl text-sm">إلغاء</button><button id="ms" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm">حفظ</button></div></div></div>
+
+<script>
+// ============ FIREBASE CONFIG ============
+const firebaseConfig = {
+  apiKey: "AIzaSyAxbhxYORdyOSDvGeIh-1wCuzW3fxRkuj0",
+  authDomain: "user-b11b0.firebaseapp.com",
+  projectId: "user-b11b0",
+  storageBucket: "user-b11b0.firebasestorage.app",
+  messagingSenderId: "87728131796",
+  appId: "1:87728131796:web:73114dedc0f164849c3541",
+  measurementId: "G-KPHJDM96XT"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const analytics = firebase.analytics();
+
+// Enable offline persistence
+db.enablePersistence({ synchronizeTabs: true })
+  .then(() => console.log('🔥 Firebase persistence enabled'))
+  .catch(err => console.warn('Persistence error:', err));
+
+// ============ GLOBAL STATE ============
+let cur = null, curId = null;
+let editingId = null, editingType = null;
+let currentTeamChatTarget = 'all';
+let curCli = null;
+
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// ============ FIREBASE HELPERS ============
+const COLLECTIONS = {
+  team: 'team',
+  clients: 'clients',
+  requests: 'requests',
+  requestTypes: 'requestTypes',
+  employeeButtons: 'employeeButtons',
+  salaryRequests: 'salaryRequests',
+  chats: 'chats'
+};
+
+// Real-time listeners
+let unsubscribeMap = {};
+
+function listenToCollection(collection, callback) {
+  if (unsubscribeMap[collection]) {
+    unsubscribeMap[collection]();
+  }
+  unsubscribeMap[collection] = db.collection(collection).onSnapshot(
+    snapshot => {
+      const data = [];
+      snapshot.forEach(doc => {
+        data.push({ id: doc.id, ...doc.data() });
+      });
+      callback(data);
+    },
+    error => {
+      console.error(`Error listening to ${collection}:`, error);
+      // Fallback: try to get data once
+      db.collection(collection).get().then(snapshot => {
+        const data = [];
+        snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+        callback(data);
+      });
+    }
+  );
+}
+
+async function addDoc(collection, data) {
+  try {
+    const docRef = await db.collection(collection).add(data);
+    return { id: docRef.id, ...data };
+  } catch (error) {
+    console.error('Error adding doc:', error);
+    // Fallback: use local
+    const tempId = Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return { id: tempId, ...data };
+  }
+}
+
+async function updateDoc(collection, id, data) {
+  try {
+    await db.collection(collection).doc(id).update(data);
+    return { id, ...data };
+  } catch (error) {
+    console.error('Error updating doc:', error);
+    return null;
+  }
+}
+
+async function deleteDoc(collection, id) {
+  try {
+    await db.collection(collection).doc(id).delete();
+    return true;
+  } catch (error) {
+    console.error('Error deleting doc:', error);
+    return false;
+  }
+}
+
+// ============ CACHE (for offline support) ============
+const cache = {
+  team: [],
+  clients: [],
+  requests: [],
+  requestTypes: [],
+  employeeButtons: [],
+  salaryRequests: [],
+  chats: {}
+};
+
+// ============ RENDER FUNCTIONS ============
+
+function renderReq() {
+  const tb = $('#tbReq');
+  if (!tb) return;
+  tb.innerHTML = '';
+  const requests = cache.requests || [];
+  requests.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50';
+    tr.innerHTML = `
+      <td class="p-3 font-semibold">${r.clientName || ''}</td>
+      <td class="p-3">${r.type || ''}</td>
+      <td class="p-3 font-semibold text-green-700">${r.amount || 0} ج</td>
+      <td class="p-3">${r.employeeName || '-'}</td>
+      <td class="p-3 text-xs">${r.createdDate || new Date(Number(r.id)).toLocaleDateString('ar-EG')}</td>
+      <td class="p-3"><input type="date" class="date-input" value="${r.deliveryDate || ''}" onchange="setDeliveryDate('${r.id}',this.value)"></td>
+      <td class="p-3 notes-cell" title="${r.notes || ''}">${r.notes || '-'}</td>
+      <td class="p-3"><input type="checkbox" ${r.paid?'checked':''} onchange="setPaid('${r.id}',this.checked)" class="w-4 h-4 rounded"></td>
+      <td class="p-3 flex flex-wrap gap-1"><button onclick="transferToClient('${r.id}')" class="action-btn transfer-btn" title="ترحيل للعميل">📤 ترحيل</button><button onclick="delReq('${r.id}')" class="action-btn del-btn">✕</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function renderTeam() {
+  const tb = $('#tbTeam');
+  if (!tb) return;
+  tb.innerHTML = '';
+  const team = cache.team || [];
+  const clients = cache.clients || [];
+  team.forEach(t => {
+    const empClients = clients.filter(c => c.assignedEmployeeId === t.id);
+    const totalCommission = empClients.reduce((sum, c) => sum + (Number(c.commission) || 0), 0);
+    const status = t.status || 'inactive';
+    const lastActive = t.lastActive ? new Date(t.lastActive).toLocaleString('ar-EG') : '-';
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50';
+    tr.innerHTML = `
+      <td class="p-2 font-semibold">${t.name || ''}</td>
+      <td class="p-2 font-mono text-xs">${t.password || ''}</td>
+      <td class="p-2 font-semibold text-green-700">${totalCommission} ج</td>
+      <td class="p-2"><span class="status-badge ${status === 'active' ? 'status-active' : 'status-inactive'}">${status === 'active' ? '🟢 نشط' : '🔴 غير نشط'}</span></td>
+      <td class="p-2 last-active">${lastActive}</td>
+      <td class="p-2"><button onclick="toggleEmployeeStatus('${t.id}')" class="toggle-btn ${status === 'active' ? 'toggle-active' : 'toggle-inactive'}">${status === 'active' ? 'إيقاف' : 'تفعيل'}</button><button onclick="editTeam('${t.id}')" class="action-btn edit-btn">✏️</button><button onclick="delTeam('${t.id}')" class="action-btn del-btn">🗑️</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+  populateTeamChatSelect();
+  renderTeamMembersList();
+}
+
+function renderCli() {
+  const tb = $('#tbCli');
+  if (!tb) return;
+  tb.innerHTML = '';
+  const clients = cache.clients || [];
+  const team = cache.team || [];
+  clients.forEach(c => {
+    const status = c.status || 'inactive';
+    const lastActive = c.lastActive ? new Date(c.lastActive).toLocaleString('ar-EG') : '-';
+    const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-50';
+    tr.innerHTML = `
+      <td class="p-2 font-semibold">${c.name || ''}</td>
+      <td class="p-2 font-mono text-xs">${c.password || ''}</td>
+      <td class="p-2"><select onchange="setEmp('${c.id}',this.value)" class="border rounded px-2 py-1 text-xs"><option value="">-</option>${team.map(e => `<option ${c.assignedEmployeeId === e.id ? 'selected' : ''} value="${e.id}">${e.name}</option>`).join('')}</select></td>
+      <td class="p-2"><input type="number" class="commission-input" value="${c.commission || 0}" onchange="setCommission('${c.id}',this.value)" placeholder="0"></td>
+      <td class="p-2"><span class="status-badge ${status === 'active' ? 'status-active' : 'status-inactive'}">${status === 'active' ? '🟢 نشط' : '🔴 غير نشط'}</span></td>
+      <td class="p-2 last-active">${lastActive}</td>
+      <td class="p-2"><button onclick="toggleClientStatus('${c.id}')" class="toggle-btn ${status === 'active' ? 'toggle-active' : 'toggle-inactive'}">${status === 'active' ? 'إيقاف' : 'تفعيل'}</button><button onclick="editCli('${c.id}')" class="action-btn edit-btn">✏️</button><button onclick="delCli('${c.id}')" class="action-btn del-btn">🗑️</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function renderTyp() {
+  const g = $('#gTyp');
+  if (!g) return;
+  g.innerHTML = '';
+  const types = cache.requestTypes || [];
+  types.forEach(t => {
+    const d = document.createElement('div');
+    d.className = 'bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 p-3 rounded-xl';
+    d.innerHTML = `
+      <div class="font-bold text-slate-800">${t.name || ''}</div>
+      <div class="text-green-700 font-semibold">${t.price || 0} جنيه</div>
+      <div class="flex gap-1 mt-2"><button onclick="editType('${t.id}')" class="action-btn edit-btn">✏️</button><button onclick="delType('${t.id}')" class="action-btn del-btn">🗑️</button></div>
+    `;
+    g.appendChild(d);
+  });
+}
+
+function renderBtn() {
+  const g = $('#gBtn');
+  if (!g) return;
+  g.innerHTML = '';
+  const btns = cache.employeeButtons || [];
+  btns.forEach(b => {
+    const d = document.createElement('div');
+    d.className = 'bg-teal-50 border border-teal-200 p-3 rounded-xl text-sm';
+    d.innerHTML = `
+      <div class="font-bold">${b.label || ''}</div>
+      <div class="text-xs text-slate-600">${b.action === 'link' ? 'رابط' : 'نسخ'} - ${b.location === 'header' ? 'شريط علوي' : 'شريط جانبي'}</div>
+      <div class="flex gap-1 mt-2"><button onclick="editBtn('${b.id}')" class="action-btn edit-btn">✏️</button><button onclick="delBtn('${b.id}')" class="action-btn del-btn">🗑️</button></div>
+    `;
+    g.appendChild(d);
+  });
+}
+
+function renderSal() {
+  const tb = $('#tbSal');
+  if (!tb) return;
+  tb.innerHTML = '';
+  const sals = cache.salaryRequests || [];
+  sals.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="p-2">${s.employeeName || ''}</td>
+      <td class="p-2">${s.amount || 0} ج</td>
+      <td class="p-2"><span class="px-2 py-1 rounded-full text-xs ${s.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}">${s.status === 'pending' ? 'قيد الانتظار' : 'تم'}</span></td>
+      <td class="p-2">${s.status === 'pending' ? `<button onclick="apSal('${s.id}')" class="bg-green-600 text-white px3 py-1 rounded-lg text-xs">تأكيد</button>` : ''}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function renderCliList() {
+  const d = $('#cliList');
+  if (!d) return;
+  d.innerHTML = '';
+  const clients = cache.clients || [];
+  clients.forEach(c => {
+    const status = c.status || 'inactive';
+    const el = document.createElement('div');
+    el.className = 'p-2 hover:bg-white rounded-lg cursor-pointer text-sm flex justify-between items-center';
+    el.innerHTML = `<span class="font-semibold ${status === 'inactive' ? 'opacity-50' : ''}">${status === 'active' ? '🟢' : '🔴'} ${c.name || ''}</span><button onclick="clearClientChat('${c.id}')" class="text-red-500 text-xs hover:text-red-700">🗑️</button>`;
+    el.onclick = (e) => { if (e.target.tagName !== 'BUTTON') openCliChat(c.id, c.name); };
+    d.appendChild(el);
+  });
+}
+
+function renderTeamMembersList() {
+  const container = $('#teamMembersList');
+  if (!container) return;
+  container.innerHTML = '<div class="text-xs font-bold text-slate-500 mb-2">👥 أعضاء الفريق</div>';
+  const team = cache.team || [];
+  team.forEach(member => {
+    const div = document.createElement('div');
+    div.className = 'team-member-item';
+    const status = member.status || 'inactive';
+    div.innerHTML = `
+      <span class="member-status ${status}"></span>
+      <span class="${status === 'inactive' ? 'opacity-50' : ''}">${member.name || ''}</span>
+      <span class="text-[10px] ${status === 'active' ? 'text-green-600' : 'text-slate-400'}">${status === 'active' ? '🟢' : '🔴'}</span>
+    `;
+    div.onclick = () => {
+      const sel = $('#teamChatSelect');
+      if (sel) sel.value = 'emp_' + member.id;
+      loadTeamChatAdmin();
+    };
+    container.appendChild(div);
+  });
+}
+
+function renderEmployeeQuickBtns() {
+  const container = $('#eQuickBtns');
+  if (!container) return;
+  container.innerHTML = '';
+  const btns = (cache.employeeButtons || []).filter(b => b.location === 'header');
+  btns.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-btn';
+    btn.textContent = b.label || '';
+    btn.onclick = () => {
+      if (b.action === 'link') window.open(b.value, '_blank');
+      else { navigator.clipboard.writeText(b.value || ''); btn.textContent = '✓'; setTimeout(() => btn.textContent = b.label || '', 1500); }
+    };
+    container.appendChild(btn);
+  });
+}
+
+function renderEmployeeSidebarBtns() {
+  const container = $('#eBtns');
+  if (!container) return;
+  container.innerHTML = '';
+  const btns = (cache.employeeButtons || []).filter(b => b.location === 'sidebar');
+  btns.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'w-full bg-slate-800 hover:bg-slate-900 text-white py-2 rounded-xl text-xs font-medium transition';
+    btn.textContent = b.label || '';
+    btn.onclick = () => {
+      if (b.action === 'link') window.open(b.value, '_blank');
+      else { navigator.clipboard.writeText(b.value || ''); btn.textContent = '✓ تم النسخ'; setTimeout(() => btn.textContent = b.label || '', 1500); }
+    };
+    container.appendChild(btn);
+  });
+}
+
+function populateTeamChatSelect() {
+  const sel = $('#teamChatSelect');
+  if (!sel) return;
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="all">👥 المجموعة العامة</option>';
+  const team = cache.team || [];
+  team.forEach(emp => {
+    const status = emp.status || 'inactive';
+    sel.innerHTML += `<option value="emp_${emp.id}">${status === 'active' ? '🟢' : '🔴'} ${emp.name || ''}</option>`;
+  });
+  if (currentVal) sel.value = currentVal;
+  else sel.value = 'all';
+}
+
+function getTeamChatId() {
+  const sel = $('#teamChatSelect');
+  if (!sel) return 'team_chat_all';
+  const val = sel.value;
+  if (val === 'all') return 'team_chat_all';
+  return 'team_chat_' + val;
+}
+
+function loadTeamChatAdmin() {
+  const chatId = getTeamChatId();
+  const b = $('#teamChatBox');
+  if (!b) return;
+  const messages = cache.chats[chatId] || [];
+  b.innerHTML = '';
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    let bubbleClass = 'chat-bubble ';
+    if (msg.from === 'admin') bubbleClass += 'from-admin';
+    else if (msg.from === 'employee') bubbleClass += 'from-employee';
+    else if (msg.from === 'client') bubbleClass += 'from-client';
+    else if (msg.from === 'system') bubbleClass += 'from-system';
+    div.className = bubbleClass;
+    if (msg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = msg.data;
+      img.className = 'chat-img';
+      img.onclick = () => window.open(msg.data, '_blank');
+      div.appendChild(img);
+    } else {
+      div.textContent = msg.text || msg.data || '';
+    }
+    b.appendChild(div);
+  });
+  b.scrollTop = b.scrollHeight;
+  renderTeamMembersList();
+}
+
+function loadCliChat() {
+  if (!curCli) return;
+  const b = $('#cBox');
+  if (!b) return;
+  const messages = cache.chats['client_' + curCli] || [];
+  b.innerHTML = '';
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    let bubbleClass = 'chat-bubble ';
+    if (msg.from === 'admin') bubbleClass += 'from-admin';
+    else if (msg.from === 'employee') bubbleClass += 'from-employee';
+    else if (msg.from === 'client') bubbleClass += 'from-client';
+    else if (msg.from === 'system') bubbleClass += 'from-system';
+    div.className = bubbleClass;
+    if (msg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = msg.data;
+      img.className = 'chat-img';
+      img.onclick = () => window.open(msg.data, '_blank');
+      div.appendChild(img);
+    } else {
+      div.textContent = msg.text || msg.data || '';
+    }
+    b.appendChild(div);
+  });
+  b.scrollTop = b.scrollHeight;
+}
+
+function loadEmpA() {
+  const b = $('#eChatA');
+  if (!b) return;
+  const messages = cache.chats['emp_' + curId] || [];
+  b.innerHTML = '';
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    let bubbleClass = 'chat-bubble ';
+    if (msg.from === 'admin') bubbleClass += 'from-admin';
+    else if (msg.from === 'employee') bubbleClass += 'from-employee';
+    else if (msg.from === 'client') bubbleClass += 'from-client';
+    else if (msg.from === 'system') bubbleClass += 'from-system';
+    div.className = bubbleClass;
+    if (msg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = msg.data;
+      img.className = 'chat-img';
+      img.onclick = () => window.open(msg.data, '_blank');
+      div.appendChild(img);
+    } else {
+      div.textContent = msg.text || msg.data || '';
+    }
+    b.appendChild(div);
+  });
+  b.scrollTop = b.scrollHeight;
+}
+
+function loadCliEmp() {
+  const id = $('#eCliSel')?.value;
+  if (!id) return;
+  const b = $('#eChatC');
+  if (!b) return;
+  const messages = cache.chats['client_' + id] || [];
+  b.innerHTML = '';
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    let bubbleClass = 'chat-bubble ';
+    if (msg.from === 'admin') bubbleClass += 'from-admin';
+    else if (msg.from === 'employee') bubbleClass += 'from-employee';
+    else if (msg.from === 'client') bubbleClass += 'from-client';
+    else if (msg.from === 'system') bubbleClass += 'from-system';
+    div.className = bubbleClass;
+    if (msg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = msg.data;
+      img.className = 'chat-img';
+      img.onclick = () => window.open(msg.data, '_blank');
+      div.appendChild(img);
+    } else {
+      div.textContent = msg.text || msg.data || '';
+    }
+    b.appendChild(div);
+  });
+  b.scrollTop = b.scrollHeight;
+}
+
+function loadCli() {
+  const b = $('#cChat');
+  if (!b) return;
+  const messages = cache.chats['client_' + curId] || [];
+  b.innerHTML = '';
+  messages.forEach(msg => {
+    const div = document.createElement('div');
+    let bubbleClass = 'chat-bubble ';
+    if (msg.from === 'admin') bubbleClass += 'from-admin';
+    else if (msg.from === 'employee') bubbleClass += 'from-employee';
+    else if (msg.from === 'client') bubbleClass += 'from-client';
+    else if (msg.from === 'system') bubbleClass += 'from-system';
+    div.className = bubbleClass;
+    if (msg.type === 'image') {
+      const img = document.createElement('img');
+      img.src = msg.data;
+      img.className = 'chat-img';
+      img.onclick = () => window.open(msg.data, '_blank');
+      div.appendChild(img);
+    } else {
+      div.textContent = msg.text || msg.data || '';
+    }
+    b.appendChild(div);
+  });
+  b.scrollTop = b.scrollHeight;
+}
+
+// ============ CHAT HELPERS ============
+function addImageToChat(chatId, from, base64Data) {
+  if (!cache.chats[chatId]) cache.chats[chatId] = [];
+  cache.chats[chatId].push({ from: from, type: 'image', data: base64Data });
+  // Save to Firebase
+  db.collection('chats').doc(chatId).set({ messages: cache.chats[chatId] })
+    .catch(err => console.error('Error saving chat:', err));
+}
+
+function sendChatMessage(chatId, from, text) {
+  if (!cache.chats[chatId]) cache.chats[chatId] = [];
+  cache.chats[chatId].push({ from: from, text: text });
+  db.collection('chats').doc(chatId).set({ messages: cache.chats[chatId] })
+    .catch(err => console.error('Error saving chat:', err));
+}
+
+// ============ STATUS MANAGEMENT ============
+function updateUserStatus(type, id, status) {
+  const key = type === 'employee' ? 'team' : 'clients';
+  const items = cache[key] || [];
+  const item = items.find(x => x.id === id);
+  if (item) {
+    item.status = status;
+    item.lastActive = new Date().toISOString();
+    db.collection(key).doc(id).update({ status: status, lastActive: item.lastActive })
+      .catch(err => console.error('Error updating status:', err));
+  }
+}
+
+function setUserActive(type, id) { updateUserStatus(type, id, 'active'); }
+function setUserInactive(type, id) { updateUserStatus(type, id, 'inactive'); }
+
+// ============ LOGIN ============
+function handleLogin() {
+  const n = $('#ln').value.trim(), p = $('#lp').value.trim();
+  
+  // ADMIN LOGIN
+  if (n.toLowerCase() === 'mostafa' && p === '332004') {
+    cur = { role: 'admin' };
+    show('admin');
+    initAdmin();
+    return;
+  }
+  
+  // EMPLOYEE LOGIN
+  const e = (cache.team || []).find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
+  if (e) {
+    if (e.status === 'inactive') { alert('⚠️ هذا الموظف غير نشط حالياً. يرجى التواصل مع الإدارة.'); return; }
+    setUserActive('employee', e.id);
+    cur = { role: 'employee', ...e };
+    curId = e.id;
+    show('employee');
+    initEmp();
+    return;
+  }
+  
+  // CLIENT LOGIN
+  const c = (cache.clients || []).find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
+  if (c) {
+    if (c.status === 'inactive') { alert('⚠️ هذا العميل غير نشط حالياً. يرجى التواصل مع الإدارة.'); return; }
+    setUserActive('client', c.id);
+    cur = { role: 'client', ...c };
+    curId = c.id;
+    show('client');
+    initCli();
+    return;
+  }
+  
+  $('#err').classList.remove('hidden');
+  setTimeout(() => $('#err').classList.add('hidden'), 3000);
+}
+
+// ============ INIT FUNCTIONS ============
+function initAdmin() {
+  renderReq();
+  renderTeam();
+  renderCli();
+  renderTyp();
+  renderBtn();
+  renderSal();
+  renderCliList();
+  loadTeamChatAdmin();
+  populateTeamChatSelect();
+  renderTeamMembersList();
+}
+
+function initEmp() {
+  $('#eName').textContent = cur.name || '';
+  updateEmployeeSalary();
+  const sel = $('#er3');
+  if (sel) {
+    sel.innerHTML = (cache.requestTypes || []).map(t => `<option value="${t.name || ''}">${t.name || ''} - ${t.price || 0}ج</option>`).join('');
+  }
+  renderEmployeeQuickBtns();
+  renderEmployeeSidebarBtns();
+  loadEmpA();
+  loadEmpClients();
+}
+
+function initCli() {
+  $('#cName').textContent = cur.name || '';
+  const tb = $('#cReqs');
+  if (tb) {
+    tb.innerHTML = '';
+    const requests = (cache.requests || []).filter(r => r.clientName === cur.name);
+    requests.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50';
+      tr.innerHTML = `
+        <td class="p-2">${r.type || ''}</td>
+        <td class="p-2 font-semibold text-green-700">${r.amount || 0} ج</td>
+        <td class="p-2">${r.employeeName || '-'}</td>
+        <td class="p-2">${r.deliveryDate ? new Date(r.deliveryDate).toLocaleDateString('ar-EG') : '-'}</td>
+        <td class="p-2">${r.paid ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">مدفوع</span>' : '<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-full text-xs">قيد الانتظار</span>'}</td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+  loadCli();
+}
+
+function updateEmployeeSalary() {
+  const clients = (cache.clients || []).filter(c => c.assignedEmployeeId === curId && c.status !== 'inactive');
+  const total = clients.reduce((sum, c) => sum + (Number(c.commission) || 0), 0);
+  const salEl = $('#eSal');
+  if (salEl) salEl.textContent = total;
+  const countEl = $('#eCliCount');
+  if (countEl) countEl.textContent = clients.length;
+  if (cur) cur.salary = total;
+}
+
+function loadEmpClients() {
+  const sel = $('#eCliSel');
+  if (!sel) return;
+  const cls = (cache.clients || []).filter(c => c.assignedEmployeeId === curId && c.status !== 'inactive');
+  sel.innerHTML = cls.map(c => `<option value="${c.id}">${c.name || ''}</option>`).join('');
+  sel.onchange = loadCliEmp;
+  loadCliEmp();
+  updateEmployeeSalary();
+}
+
+// ============ LISTENERS ============
+// Listen to all collections
+function startListeners() {
+  // Team
+  listenToCollection('team', (data) => {
+    cache.team = data;
+    if (cur?.role === 'admin') { renderTeam(); renderTeamMembersList(); populateTeamChatSelect(); }
+    if (cur?.role === 'employee') { updateEmployeeSalary(); loadEmpClients(); }
+  });
+  
+  // Clients
+  listenToCollection('clients', (data) => {
+    cache.clients = data;
+    if (cur?.role === 'admin') { renderCli(); renderCliList(); renderTeam(); }
+    if (cur?.role === 'employee') { updateEmployeeSalary(); loadEmpClients(); }
+  });
+  
+  // Requests
+  listenToCollection('requests', (data) => {
+    cache.requests = data;
+    if (cur?.role === 'admin') renderReq();
+    if (cur?.role === 'client') initCli();
+    if (cur?.role === 'employee') {
+      // Refresh employee view if needed
+    }
+  });
+  
+  // Request Types
+  listenToCollection('requestTypes', (data) => {
+    cache.requestTypes = data;
+    if (cur?.role === 'admin') renderTyp();
+    if (cur?.role === 'employee') {
+      const sel = $('#er3');
+      if (sel) {
+        sel.innerHTML = data.map(t => `<option value="${t.name || ''}">${t.name || ''} - ${t.price || 0}ج</option>`).join('');
+      }
+    }
+  });
+  
+  // Employee Buttons
+  listenToCollection('employeeButtons', (data) => {
+    cache.employeeButtons = data;
+    if (cur?.role === 'admin') renderBtn();
+    if (cur?.role === 'employee') { renderEmployeeQuickBtns(); renderEmployeeSidebarBtns(); }
+  });
+  
+  // Salary Requests
+  listenToCollection('salaryRequests', (data) => {
+    cache.salaryRequests = data;
+    if (cur?.role === 'admin') renderSal();
+  });
+  
+  // Chats
+  listenToCollection('chats', (data) => {
+    const newChats = {};
+    data.forEach(doc => {
+      newChats[doc.id] = doc.messages || [];
+    });
+    cache.chats = newChats;
+    // Refresh all chat views
+    if (cur?.role === 'admin') {
+      loadTeamChatAdmin();
+      loadCliChat();
+    }
+    if (cur?.role === 'employee') {
+      loadEmpA();
+      loadCliEmp();
+    }
+    if (cur?.role === 'client') {
+      loadCli();
+    }
+  });
+}
+
+// ============ WINDOW FUNCTIONS ============
+window.setDeliveryDate = (id, val) => {
+  db.collection('requests').doc(id).update({ deliveryDate: val })
+    .catch(err => console.error('Error updating delivery date:', err));
+};
+
+window.setPaid = (id, val) => {
+  db.collection('requests').doc(id).update({ paid: val })
+    .catch(err => console.error('Error updating paid status:', err));
+};
+
+window.delReq = (id) => {
+  if (!confirm('هل تريد حذف هذا الطلب؟')) return;
+  deleteDoc('requests', id);
+};
+
+window.transferToClient = async (reqId) => {
+  if (!confirm('هل تريد ترحيل هذا الطلب إلى قائمة العملاء؟')) return;
+  const req = (cache.requests || []).find(r => r.id === reqId);
+  if (!req) { alert('الطلب غير موجود'); return; }
+  const existing = (cache.clients || []).find(c => c.name === req.clientName);
+  if (existing) { alert('هذا العميل موجود بالفعل في قائمة العملاء!'); return; }
+  
+  const password = Math.floor(100000 + Math.random() * 900000).toString();
+  const emp = (cache.team || []).find(t => t.name === req.employeeName);
+  const newClient = {
+    name: req.clientName,
+    password: password,
+    assignedEmployeeId: emp ? emp.id : '',
+    commission: 0,
+    status: 'active',
+    lastActive: new Date().toISOString()
+  };
+  
+  try {
+    await db.collection('clients').add(newClient);
+    await deleteDoc('requests', reqId);
+    alert('✅ تم ترحيل العميل بنجاح!\n📌 اسم العميل: ' + req.clientName + '\n🔑 كلمة السر: ' + password + '\n👤 الموظف المسؤول: ' + (req.employeeName || 'غير محدد'));
+  } catch (error) {
+    console.error('Error transferring client:', error);
+    alert('حدث خطأ أثناء الترحيل');
+  }
+};
+
+window.toggleEmployeeStatus = (id) => {
+  const item = (cache.team || []).find(x => x.id === id);
+  if (item) {
+    const newStatus = item.status === 'active' ? 'inactive' : 'active';
+    db.collection('team').doc(id).update({ status: newStatus, lastActive: new Date().toISOString() })
+      .catch(err => console.error('Error toggling status:', err));
+  }
+};
+
+window.toggleClientStatus = (id) => {
+  const item = (cache.clients || []).find(x => x.id === id);
+  if (item) {
+    const newStatus = item.status === 'active' ? 'inactive' : 'active';
+    db.collection('clients').doc(id).update({ status: newStatus, lastActive: new Date().toISOString() })
+      .catch(err => console.error('Error toggling status:', err));
+  }
+};
+
+window.editTeam = (id) => {
+  const t = (cache.team || []).find(x => x.id === id);
+  if (!t) return;
+  openM('تعديل موظف', 
+    `<div class="space-y-2"><input id="e1" value="${t.name || ''}" placeholder="الاسم" class="w-full border p-2 rounded-xl"><input id="e2" value="${t.password || ''}" placeholder="الباسورد" class="w-full border p-2 rounded-xl"></div>`,
+    () => {
+      db.collection('team').doc(id).update({ name: e1.value, password: e2.value })
+        .catch(err => console.error('Error updating team:', err));
+    },
+    'team', id
+  );
+};
+
+window.delTeam = (id) => {
+  if (!confirm('هل تريد حذف هذا الموظف؟')) return;
+  deleteDoc('team', id);
+};
+
+window.editCli = (id) => {
+  const c = (cache.clients || []).find(x => x.id === id);
+  if (!c) return;
+  openM('تعديل عميل',
+    `<div class="space-y-2"><input id="c1" value="${c.name || ''}" placeholder="اسم الشركة" class="w-full border p-2 rounded-xl"><input id="c2" value="${c.password || ''}" placeholder="كلمة السر" class="w-full border p-2 rounded-xl"></div>`,
+    () => {
+      db.collection('clients').doc(id).update({ name: c1.value, password: c2.value })
+        .catch(err => console.error('Error updating client:', err));
+    },
+    'client', id
+  );
+};
+
+window.setEmp = (id, eid) => {
+  db.collection('clients').doc(id).update({ assignedEmployeeId: eid })
+    .catch(err => console.error('Error updating employee assignment:', err));
+};
+
+window.setCommission = (id, val) => {
+  db.collection('clients').doc(id).update({ commission: Number(val) || 0 })
+    .catch(err => console.error('Error updating commission:', err));
+};
+
+window.delCli = (id) => {
+  if (!confirm('هل تريد حذف هذا العميل؟')) return;
+  deleteDoc('clients', id);
+};
+
+window.editType = (id) => {
+  const t = (cache.requestTypes || []).find(x => x.id === id);
+  if (!t) return;
+  openM('تعديل خدمة',
+    `<div class="space-y-2"><input id="t1" value="${t.name || ''}" placeholder="اسم الخدمة" class="w-full border p-2 rounded-xl"><input id="t2" type="number" value="${t.price || 0}" placeholder="السعر" class="w-full border p-2 rounded-xl"></div>`,
+    () => {
+      db.collection('requestTypes').doc(id).update({ name: t1.value, price: Number(t2.value) })
+        .catch(err => console.error('Error updating type:', err));
+    },
+    'type', id
+  );
+};
+
+window.delType = (id) => {
+  if (!confirm('هل تريد حذف هذه الخدمة؟')) return;
+  deleteDoc('requestTypes', id);
+};
+
+window.editBtn = (id) => {
+  const b = (cache.employeeButtons || []).find(x => x.id === id);
+  if (!b) return;
+  openM('تعديل زر',
+    `<div class="space-y-2"><input id="b1" value="${b.label || ''}" placeholder="اسم الزر" class="w-full border p-2 rounded-xl"><select id="b2" class="w-full border p-2 rounded-xl"><option value="link" ${b.action === 'link' ? 'selected' : ''}>فتح رابط</option><option value="copy" ${b.action === 'copy' ? 'selected' : ''}>نسخ نص</option></select><input id="b3" value="${b.value || ''}" placeholder="الرابط أو النص" class="w-full border p-2 rounded-xl"><select id="b4" class="w-full border p-2 rounded-xl"><option value="header" ${b.location === 'header' ? 'selected' : ''}>شريط رأس الموظف</option><option value="sidebar" ${b.location === 'sidebar' ? 'selected' : ''}>الشريط الجانبي</option></select></div>`,
+    () => {
+      db.collection('employeeButtons').doc(id).update({
+        label: b1.value,
+        action: b2.value,
+        value: b3.value,
+        location: b4.value
+      }).catch(err => console.error('Error updating button:', err));
+    },
+    'btn', id
+  );
+};
+
+window.delBtn = (id) => {
+  if (!confirm('هل تريد حذف هذا الزر؟')) return;
+  deleteDoc('employeeButtons', id);
+};
+
+window.apSal = (id) => {
+  db.collection('salaryRequests').doc(id).update({ status: 'approved' })
+    .catch(err => console.error('Error approving salary:', err));
+};
+
+function clearClientChat(clientId) {
+  if (!confirm('هل تريد مسح كل رسائل هذا العميل؟')) return;
+  const chatId = 'client_' + clientId;
+  db.collection('chats').doc(chatId).set({ messages: [] })
+    .then(() => {
+      if (curCli === clientId) loadCliChat();
+    })
+    .catch(err => console.error('Error clearing chat:', err));
+}
+
+function openCliChat(id, name) {
+  curCli = id;
+  const head = $('#cHead');
+  if (head) head.innerHTML = `<span>${name || ''}</span>`;
+  loadCliChat();
+}
+
+// ============ MODAL ============
+function openM(t, h, sv, type, id) {
+  editingType = type;
+  editingId = id;
+  const mt = $('#mt');
+  const mb = $('#mb');
+  const modal = $('#modal');
+  if (mt) mt.textContent = t;
+  if (mb) mb.innerHTML = h;
+  if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  const ms = $('#ms');
+  if (ms) ms.onclick = () => { sv(); closeM(); };
+}
+
+function closeM() {
+  const modal = $('#modal');
+  if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+  editingId = null;
+  editingType = null;
+}
+
+$('#mc')?.addEventListener('click', closeM);
+
+// ============ LOGIN EVENTS ============
+$('#btnIn')?.addEventListener('click', handleLogin);
+$('#ln')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+$('#lp')?.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+
+// ============ LOGOUT ============
+function logout() {
+  if (cur && curId) {
+    const type = cur.role === 'employee' ? 'employee' : 'client';
+    setUserInactive(type, curId);
+  }
+  location.reload();
+}
+
+// ============ SHOW ============
+function show(v) {
+  ['login', 'admin', 'employee', 'client'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
+  });
+  const el = document.getElementById(v);
+  if (el) el.classList.remove('hidden');
+  document.getElementById('loading')?.classList.add('hidden');
+}
+
+// ============ TABS ============
+document.querySelectorAll('.tab')?.forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => {
+      x.classList.remove('bg-blue-600', 'text-white');
+    });
+    b.classList.add('bg-blue-600', 'text-white');
+    document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
+    const target = document.getElementById('s-' + b.dataset.t);
+    if (target) target.classList.remove('hidden');
+  };
+});
+
+// ============ CHAT EVENTS ============
+// Admin client chat
+$('#cSend')?.addEventListener('click', () => {
+  if (!curCli) return;
+  const t = $('#cIn')?.value?.trim();
+  if (!t) return;
+  sendChatMessage('client_' + curCli, 'admin', t);
+  if ($('#cIn')) $('#cIn').value = '';
+  loadCliChat();
+});
+
+$('#cImg')?.addEventListener('click', () => $('#cFileInput')?.click());
+
+$('#cFileInput')?.addEventListener('change', function(e) {
+  if (!curCli || !this.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addImageToChat('client_' + curCli, 'admin', ev.target.result);
+    loadCliChat();
+    this.value = '';
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+
+$('#cClearChat')?.addEventListener('click', () => {
+  if (!curCli) return;
+  clearClientChat(curCli);
+});
+
+// Team chat
+$('#teamChatSend')?.addEventListener('click', () => {
+  const t = $('#teamChatIn')?.value?.trim();
+  if (!t) return;
+  const chatId = getTeamChatId();
+  sendChatMessage(chatId, 'admin', '🛡️ الإدارة: ' + t);
+  if ($('#teamChatIn')) $('#teamChatIn').value = '';
+  loadTeamChatAdmin();
+});
+
+$('#teamChatImg')?.addEventListener('click', () => $('#teamFileInput')?.click());
+
+$('#teamFileInput')?.addEventListener('change', function(e) {
+  if (!this.files[0]) return;
+  const chatId = getTeamChatId();
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addImageToChat(chatId, 'admin', ev.target.result);
+    loadTeamChatAdmin();
+    this.value = '';
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+
+$('#clearTeamChat')?.addEventListener('click', () => {
+  const chatId = getTeamChatId();
+  const sel = $('#teamChatSelect');
+  const targetName = sel?.options[sel.selectedIndex]?.text || 'المجموعة';
+  if (!confirm('هل تريد مسح كل رسائل ' + targetName + '؟')) return;
+  db.collection('chats').doc(chatId).set({ messages: [] })
+    .then(() => loadTeamChatAdmin())
+    .catch(err => console.error('Error clearing team chat:', err));
+});
+
+$('#teamChatSelect')?.addEventListener('change', loadTeamChatAdmin);
+
+// Employee chat with admin
+$('#eSendA')?.addEventListener('click', () => {
+  const t = $('#eInA')?.value?.trim();
+  if (!t) return;
+  sendChatMessage('emp_' + curId, 'employee', t);
+  if ($('#eInA')) $('#eInA').value = '';
+  loadEmpA();
+});
+
+$('#eImgA')?.addEventListener('click', () => $('#eFileInputA')?.click());
+
+$('#eFileInputA')?.addEventListener('change', function(e) {
+  if (!this.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addImageToChat('emp_' + curId, 'employee', ev.target.result);
+    loadEmpA();
+    this.value = '';
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+
+// Employee chat with client
+$('#eSendC')?.addEventListener('click', () => {
+  const id = $('#eCliSel')?.value;
+  if (!id) return;
+  const t = $('#eInC')?.value?.trim();
+  if (!t) return;
+  sendChatMessage('client_' + id, 'employee', t);
+  if ($('#eInC')) $('#eInC').value = '';
+  loadCliEmp();
+});
+
+$('#eImgC')?.addEventListener('click', () => $('#eFileInputC')?.click());
+
+$('#eFileInputC')?.addEventListener('change', function(e) {
+  if (!this.files[0]) return;
+  const id = $('#eCliSel')?.value;
+  if (!id) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addImageToChat('client_' + id, 'employee', ev.target.result);
+    loadCliEmp();
+    this.value = '';
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+
+// Client chat
+$('#cSendBtn')?.addEventListener('click', () => {
+  const t = $('#cInp')?.value?.trim();
+  if (!t) return;
+  sendChatMessage('client_' + curId, 'client', t);
+  if ($('#cInp')) $('#cInp').value = '';
+  loadCli();
+});
+
+$('#cImgBtn')?.addEventListener('click', () => $('#cFileInputClient')?.click());
+
+$('#cFileInputClient')?.addEventListener('change', function(e) {
+  if (!this.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    addImageToChat('client_' + curId, 'client', ev.target.result);
+    loadCli();
+    this.value = '';
+  };
+  reader.readAsDataURL(this.files[0]);
+});
+
+// ============ EMPLOYEE FORM ============
+$('#eForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const er1 = $('#er1'), er2 = $('#er2'), er3 = $('#er3'), er4 = $('#er4'), er5 = $('#er5');
+  const type = (cache.requestTypes || []).find(t => t.name === er3?.value);
+  const o = {
+    clientName: er1?.value || '',
+    company: er2?.value || '',
+    type: er3?.value || '',
+    amount: type?.price || 0,
+    employeeName: cur?.name || '',
+    createdDate: new Date().toLocaleDateString('ar-EG'),
+    deliveryDate: er5?.value || '',
+    notes: er4?.value || '',
+    paid: false
+  };
+  try {
+    await db.collection('requests').add(o);
+    if (er1) er1.value = '';
+    if (er2) er2.value = '';
+    if (er3) er3.value = '';
+    if (er4) er4.value = '';
+    if (er5) er5.value = '';
+    alert('تم إرسال الطلب');
+  } catch (error) {
+    console.error('Error adding request:', error);
+    alert('حدث خطأ أثناء إرسال الطلب');
+  }
+});
+
+// ============ EMPLOYEE SALARY REQUEST ============
+$('#eReqSal')?.addEventListener('click', () => {
+  const total = parseInt($('#eSal')?.textContent || '0') || 0;
+  if (total === 0) { alert('لا توجد عمولة مستحقة حالياً'); return; }
+  db.collection('salaryRequests').add({
+    employeeId: curId,
+    employeeName: cur?.name || '',
+    amount: total,
+    status: 'pending'
+  }).then(() => alert('تم إرسال طلب الراتب'))
+    .catch(err => { console.error('Error requesting salary:', err); alert('حدث خطأ'); });
+});
+
+// ============ ADMIN ADD BUTTONS ============
+$('#aReq')?.addEventListener('click', () => {
+  const types = cache.requestTypes || [];
+  const clients = cache.clients || [];
+  const team = cache.team || [];
+  openM('طلب جديد',
+    `<div class="space-y-3"><select id="r1" class="w-full border p-2 rounded-xl">${clients.map(c => `<option>${c.name || ''}</option>`).join('')}</select><select id="r2" class="w-full border p-2 rounded-xl">${types.map(t => `<option value="${t.name || ''}" data-p="${t.price || 0}">${t.name || ''} - ${t.price || 0}ج</option>`).join('')}</select><select id="r3" class="w-full border p-2 rounded-xl"><option value="">اختر موظف</option>${team.map(e => `<option>${e.name || ''}</option>`).join('')}</select><input id="r5" type="date" class="w-full border p-2 rounded-xl" value=""><textarea id="r4" placeholder="ملاحظات" class="w-full border p-2 rounded-xl" rows="2"></textarea></div>`,
+    () => {
+      const p = document.querySelector('#r2')?.selectedOptions[0]?.dataset?.p || 0;
+      const r1 = $('#r1'), r2 = $('#r2'), r3 = $('#r3'), r4 = $('#r4'), r5 = $('#r5');
+      db.collection('requests').add({
+        clientName: r1?.value || '',
+        type: r2?.value || '',
+        amount: Number(p),
+        employeeName: r3?.value || '',
+        createdDate: new Date().toLocaleDateString('ar-EG'),
+        deliveryDate: r5?.value || '',
+        notes: r4?.value || '',
+        paid: false
+      }).then(() => { if (r1) r1.value = ''; if (r2) r2.value = ''; if (r3) r3.value = ''; if (r4) r4.value = ''; if (r5) r5.value = ''; })
+        .catch(err => console.error('Error adding request:', err));
+    }
+  );
+});
+
+$('#aEmp')?.addEventListener('click', () => {
+  openM('موظف جديد',
+    `<div class="space-y-2"><input id="e1" placeholder="الاسم" class="w-full border p-2 rounded-xl"><input id="e2" placeholder="الباسورد" class="w-full border p-2 rounded-xl"></div>`,
+    () => {
+      const e1 = $('#e1'), e2 = $('#e2');
+      db.collection('team').add({
+        name: e1?.value || '',
+        password: e2?.value || '',
+        status: 'inactive',
+        lastActive: new Date().toISOString()
+      }).then(() => { if (e1) e1.value = ''; if (e2) e2.value = ''; })
+        .catch(err => console.error('Error adding employee:', err));
+    }
+  );
+});
+
+$('#aCli')?.addEventListener('click', () => {
+  openM('عميل جديد',
+    `<div class="space-y-2"><input id="c1" placeholder="اسم الشركة" class="w-full border p-2 rounded-xl"><input id="c2" placeholder="كلمة السر" class="w-full border p-2 rounded-xl"></div>`,
+    () => {
+      const c1 = $('#c1'), c2 = $('#c2');
+      db.collection('clients').add({
+        name: c1?.value || '',
+        password: c2?.value || '',
+        assignedEmployeeId: '',
+        commission: 0,
+        status: 'inactive',
+        lastActive: new Date().toISOString()
+      }).then(() => { if (c1) c1.value = ''; if (c2) c2.value = ''; })
+        .catch(err => console.error('Error adding client:', err));
+    }
+  );
+});
+
+$('#aTyp')?.addEventListener('click', () => {
+  openM('خدمة جديدة',
+    `<div class="space-y-2"><input id="t1" placeholder="اسم الخدمة" class="w-full border p-2 rounded-xl"><input id="t2" type="number" placeholder="السعر" class="w-full border p-2 rounded-xl"></div>`,
+    () => {
+      const t1 = $('#t1'), t2 = $('#t2');
+      db.collection('requestTypes').add({
+        name: t1?.value || '',
+        price: Number(t2?.value) || 0
+      }).then(() => { if (t1) t1.value = ''; if (t2) t2.value = ''; })
+        .catch(err => console.error('Error adding type:', err));
+    }
+  );
+});
+
+$('#aBtn')?.addEventListener('click', () => {
+  openM('زر سريع',
+    `<div class="space-y-2"><input id="b1" placeholder="اسم الزر" class="w-full border p-2 rounded-xl"><select id="b2" class="w-full border p-2 rounded-xl"><option value="link">فتح رابط</option><option value="copy">نسخ نص</option></select><input id="b3" placeholder="الرابط أو النص" class="w-full border p-2 rounded-xl"><select id="b4" class="w-full border p-2 rounded-xl"><option value="header">شريط رأس الموظف</option><option value="sidebar">الشريط الجانبي</option></select></div>`,
+    () => {
+      const b1 = $('#b1'), b2 = $('#b2'), b3 = $('#b3'), b4 = $('#b4');
+      db.collection('employeeButtons').add({
+        label: b1?.value || '',
+        action: b2?.value || 'link',
+        value: b3?.value || '',
+        location: b4?.value || 'header'
+      }).then(() => { if (b1) b1.value = ''; if (b2) b2.value = ''; if (b3) b3.value = ''; if (b4) b4.value = ''; })
+        .catch(err => console.error('Error adding button:', err));
+    }
+  );
+});
+
+// ============ START ============
+document.addEventListener('DOMContentLoaded', () => {
+  // Start Firebase listeners
+  startListeners();
+  
+  // Hide loading after 2 seconds or when data loads
+  setTimeout(() => {
+    document.getElementById('loading')?.classList.add('hidden');
+  }, 3000);
+});
+
+// ============ AUTO REFRESH (redundant with realtime) ============
+// Keep for compatibility but not needed with Firebase realtime
+setInterval(() => {
+  if (cur?.role === 'client') loadCli();
+  if (cur?.role === 'admin') { loadTeamChatAdmin(); populateTeamChatSelect(); renderTeamMembersList(); }
+}, 30000);
+
+// Update last active periodically
+setInterval(() => {
+  if (cur && curId) {
+    const type = cur.role === 'employee' ? 'employee' : 'client';
+    const key = type === 'employee' ? 'team' : 'clients';
+    db.collection(key).doc(curId).update({ lastActive: new Date().toISOString() })
+      .catch(() => {});
+  }
+}, 30000);
+
+document.addEventListener('click', () => {
+  if (cur && curId) {
+    const type = cur.role === 'employee' ? 'employee' : 'client';
+    const key = type === 'employee' ? 'team' : 'clients';
+    db.collection(key).doc(curId).update({ lastActive: new Date().toISOString() })
+      .catch(() => {});
+  }
+});
+
+window.addEventListener('beforeunload', function() {
+  if (cur && curId) {
+    const type = cur.role === 'employee' ? 'employee' : 'client';
+    setUserInactive(type, curId);
+  }
+});
+
+console.log('🔥 Firebase connected! All data is synced in real-time across all devices.');
+</script>
+</body>
+</html>
