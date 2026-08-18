@@ -5,24 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شركة آسر للدعاية والإعلان</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics-compat.js"></script>
 
     <style>
-        * {
-            font-family: 'Cairo', sans-serif;
-        }
-        body {
-            background: #f0f4f8;
-        }
+        * { font-family: 'Cairo', sans-serif; }
+        body { background: #f0f4f8; }
         .chat-bubble {
             max-width: 75%;
             padding: 8px 12px;
@@ -58,13 +50,8 @@
             font-style: italic;
             text-align: center;
         }
-        .glass {
-            background: rgba(255, 255, 255, .95);
-            backdrop-filter: blur(12px);
-        }
-        .hidden {
-            display: none !important;
-        }
+        .glass { background: rgba(255, 255, 255, .95); backdrop-filter: blur(12px); }
+        .hidden { display: none !important; }
         .status-badge {
             padding: 2px 10px;
             border-radius: 20px;
@@ -72,14 +59,8 @@
             font-weight: 600;
             display: inline-block;
         }
-        .status-active {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        .status-inactive {
-            background: #f1f5f9;
-            color: #64748b;
-        }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-inactive { background: #f1f5f9; color: #64748b; }
         .action-btn {
             padding: 2px 8px;
             border-radius: 6px;
@@ -89,21 +70,10 @@
             border: none;
             transition: all 0.2s;
         }
-        .action-btn:hover {
-            transform: scale(1.05);
-        }
-        .edit-btn {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-        .del-btn {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        .transfer-btn {
-            background: #d1fae5;
-            color: #065f46;
-        }
+        .action-btn:hover { transform: scale(1.05); }
+        .edit-btn { background: #dbeafe; color: #1d4ed8; }
+        .del-btn { background: #fee2e2; color: #dc2626; }
+        .transfer-btn { background: #d1fae5; color: #065f46; }
         .quick-btn {
             background: white;
             border: 1px solid #e2e8f0;
@@ -129,10 +99,7 @@
             font-size: 13px;
             background: white;
         }
-        .commission-input:focus {
-            outline: 2px solid #3b82f6;
-            border-color: transparent;
-        }
+        .commission-input:focus { outline: 2px solid #3b82f6; border-color: transparent; }
         .date-input {
             background: white;
             border: 1px solid #e2e8f0;
@@ -142,10 +109,7 @@
             color: #1e293b;
             width: 120px;
         }
-        .date-input:focus {
-            outline: 2px solid #3b82f6;
-            border-color: transparent;
-        }
+        .date-input:focus { outline: 2px solid #3b82f6; border-color: transparent; }
         .chat-img {
             max-width: 200px;
             max-height: 200px;
@@ -162,20 +126,10 @@
             border: none;
             transition: all 0.2s;
         }
-        .toggle-active {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        .toggle-active:hover {
-            background: #a7f3d0;
-        }
-        .toggle-inactive {
-            background: #f1f5f9;
-            color: #64748b;
-        }
-        .toggle-inactive:hover {
-            background: #e2e8f0;
-        }
+        .toggle-active { background: #d1fae5; color: #065f46; }
+        .toggle-active:hover { background: #a7f3d0; }
+        .toggle-inactive { background: #f1f5f9; color: #64748b; }
+        .toggle-inactive:hover { background: #e2e8f0; }
         .notes-cell {
             max-width: 150px;
             font-size: 12px;
@@ -196,9 +150,7 @@
             background: #22c55e;
             color: white;
         }
-        .firebase-status.offline {
-            background: #ef4444;
-        }
+        .firebase-status.offline { background: #ef4444; }
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -222,21 +174,14 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         .tab {
             transition: all 0.3s;
             cursor: pointer;
         }
-        .tab.active {
-            background: #2563eb;
-            color: white;
-        }
+        .tab.active { background: #2563eb; color: white; }
         .team-member-item {
             padding: 4px 8px;
             border-radius: 6px;
@@ -246,21 +191,15 @@
             gap: 6px;
             cursor: pointer;
         }
-        .team-member-item:hover {
-            background: #f1f5f9;
-        }
+        .team-member-item:hover { background: #f1f5f9; }
         .member-status {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
-        .member-status.active {
-            background: #22c55e;
-        }
-        .member-status.inactive {
-            background: #94a3b8;
-        }
+        .member-status.active { background: #22c55e; }
+        .member-status.inactive { background: #94a3b8; }
         .chat-select {
             background: white;
             border: 1px solid #e2e8f0;
@@ -270,14 +209,8 @@
             color: #1e293b;
             outline: none;
         }
-        .chat-select:focus {
-            border-color: #3b82f6;
-            ring: 2px solid #3b82f6;
-        }
-        .last-active {
-            font-size: 10px;
-            color: #94a3b8;
-        }
+        .chat-select:focus { border-color: #3b82f6; ring: 2px solid #3b82f6; }
+        .last-active { font-size: 10px; color: #94a3b8; }
         .sync-indicator {
             position: fixed;
             bottom: 10px;
@@ -326,7 +259,10 @@
     <div id="admin" class="hidden min-h-screen bg-slate-50">
         <header class="bg-slate-900 text-white p-4 shadow-lg">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <h1 class="font-bold text-lg">👑 لوحة تحكم آسر</h1>
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center font-bold">آ</div>
+                    <div><h1 class="font-bold">لوحة تحكم آسر</h1><p class="text-xs opacity-70">الإدارة الرئيسية</p></div>
+                </div>
                 <button onclick="logout()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm transition">🚪 خروج</button>
             </div>
         </header>
@@ -675,7 +611,6 @@
         const $ = s => document.querySelector(s);
         const $$ = s => document.querySelectorAll(s);
 
-        // Data cache
         const data = {
             team: [],
             clients: [],
@@ -687,49 +622,53 @@
         };
 
         // =============================================
-        // REAL-TIME LISTENERS - KEY FIX!
+        // REAL-TIME LISTENERS
         // =============================================
         function startListeners() {
             console.log('🔥 Starting real-time listeners...');
 
-            // Team - with automatic UI update
+            // Team
             db.collection('team').onSnapshot(snapshot => {
                 data.team = [];
                 snapshot.forEach(doc => data.team.push({ id: doc.id, ...doc.data() }));
                 console.log('👥 Team updated:', data.team.length);
-                // Update ALL UI elements that show team data
-                if (cur?.role === 'admin' || cur?.role === 'employee') {
+                if (cur?.role === 'admin') {
                     renderTeam();
-                    renderCli(); // Clients depend on team for employee names
+                    renderCli(); // Clients need team data
                     populateTeamChatSelect();
                     renderTeamMembersList();
-                    renderAll();
+                }
+                if (cur?.role === 'employee') {
+                    updateEmployeeSalary();
+                    loadEmpClients();
                 }
             }, error => console.error('Team error:', error));
 
-            // Clients - with automatic UI update
+            // Clients
             db.collection('clients').onSnapshot(snapshot => {
                 data.clients = [];
                 snapshot.forEach(doc => data.clients.push({ id: doc.id, ...doc.data() }));
                 console.log('👤 Clients updated:', data.clients.length);
-                if (cur?.role === 'admin' || cur?.role === 'employee') {
+                if (cur?.role === 'admin') {
                     renderCli();
-                    renderTeam(); // Team needs client commissions
+                    renderTeam(); // Team needs client data for commissions
                     renderCliList();
-                    if (cur?.role === 'employee') {
-                        updateEmployeeSalary();
-                        loadEmpClients();
-                    }
-                    renderAll();
+                }
+                if (cur?.role === 'employee') {
+                    updateEmployeeSalary();
+                    loadEmpClients();
                 }
             }, error => console.error('Clients error:', error));
 
-            // Requests - with automatic UI update
+            // Requests
             db.collection('requests').onSnapshot(snapshot => {
                 data.requests = [];
                 snapshot.forEach(doc => data.requests.push({ id: doc.id, ...doc.data() }));
                 console.log('📋 Requests updated:', data.requests.length);
                 if (cur?.role === 'admin') renderReq();
+                if (cur?.role === 'employee') {
+                    // Update employee requests view
+                }
                 if (cur?.role === 'client') {
                     const tb = $('#cReqs');
                     if (tb) {
@@ -803,31 +742,7 @@
         }
 
         // =============================================
-        // RENDER ALL - Force UI update
-        // =============================================
-        function renderAll() {
-            if (cur?.role === 'admin') {
-                renderReq();
-                renderTeam();
-                renderCli();
-                renderTyp();
-                renderBtn();
-                renderSal();
-                renderCliList();
-                populateTeamChatSelect();
-                renderTeamMembersList();
-                loadTeamChatAdmin();
-            } else if (cur?.role === 'employee') {
-                renderEmployeeQuickBtns();
-                renderEmployeeSidebarBtns();
-                updateEmployeeSalary();
-                loadEmpClients();
-                loadEmpA();
-            }
-        }
-
-        // =============================================
-        // RENDER FUNCTIONS
+        // RENDER FUNCTIONS (All original functions preserved)
         // =============================================
 
         function renderReq() {
@@ -880,6 +795,8 @@
                 `;
                 tb.appendChild(tr);
             });
+            populateTeamChatSelect();
+            renderTeamMembersList();
         }
 
         function renderCli() {
@@ -1254,7 +1171,17 @@
             if (n.toLowerCase() === 'mostafa' && p === '332004') {
                 cur = { role: 'admin' };
                 show('admin');
-                renderAll();
+                // Render all data
+                renderReq();
+                renderTeam();
+                renderCli();
+                renderTyp();
+                renderBtn();
+                renderSal();
+                renderCliList();
+                populateTeamChatSelect();
+                renderTeamMembersList();
+                loadTeamChatAdmin();
                 return;
             }
 
@@ -1344,7 +1271,7 @@
         }
 
         // =============================================
-        // WINDOW FUNCTIONS
+        // WINDOW FUNCTIONS (All original functions)
         // =============================================
         window.setDeliveryDate = (id, val) => {
             db.collection('requests').doc(id).update({ deliveryDate: val })
