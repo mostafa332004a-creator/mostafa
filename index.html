@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK (Compatibility mode - works everywhere) -->
+    <!-- Firebase SDK (Compatibility mode) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics-compat.js"></script>
@@ -36,9 +36,10 @@
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 16px; }
         .loading-spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .tab { transition: all 0.3s; cursor: pointer; }
+        .tab { transition: all 0.3s; cursor: pointer; padding: 8px 16px; border-radius: 8px; }
         .tab.active { background: #2563eb; color: white; }
-        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 12px; color: white; z-index: 9999; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateX(120%); transition: transform 0.3s ease; }
+        .tab:hover:not(.active) { background: #f1f5f9; }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 12px; color: white; z-index: 9999; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateX(120%); transition: transform 0.3s ease; max-width: 90%; }
         .toast.show { transform: translateX(0); }
         .toast.success { background: #22c55e; }
         .toast.error { background: #ef4444; }
@@ -58,7 +59,7 @@
         .member-status.active { background: #22c55e; }
         .member-status.inactive { background: #94a3b8; }
         .chat-select { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 8px; font-size: 13px; color: #1e293b; outline: none; }
-        .chat-select:focus { border-color: #3b82f6; ring: 2px solid #3b82f6; }
+        .chat-select:focus { border-color: #3b82f6; outline: 2px solid #3b82f6; }
         .chat-img { max-width: 200px; max-height: 200px; border-radius: 12px; margin: 4px 0; border: 1px solid #e2e8f0; cursor: pointer; }
         .notes-cell { max-width: 150px; font-size: 12px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .last-active { font-size: 10px; color: #94a3b8; }
@@ -66,6 +67,9 @@
         .toggle-active { background: #d1fae5; color: #065f46; }
         .toggle-inactive { background: #f1f5f9; color: #64748b; }
         .toggle-btn:hover { opacity: 0.8; }
+        .table-container { overflow-x: auto; }
+        table { min-width: 600px; }
+        @media (max-width: 640px) { .tab { font-size: 12px; padding: 6px 10px; } }
     </style>
 </head>
 <body>
@@ -104,38 +108,38 @@
     <!-- ========== ADMIN ========== -->
     <div id="admin" class="hidden min-h-screen bg-slate-50">
         <header class="bg-slate-900 text-white p-4 shadow-lg">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-2">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center font-bold">آ</div>
                     <div><h1 class="font-bold">لوحة تحكم آسر</h1><p class="text-xs opacity-70">الإدارة الرئيسية</p></div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 flex-wrap">
                     <button onclick="forceSync()" class="sync-btn">🔄 مزامنة فورية</button>
                     <button onclick="logout()" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-sm transition">🚪 خروج</button>
                 </div>
             </div>
         </header>
 
-        <nav class="bg-white shadow-sm sticky top-0 z-20 border-b p-2 flex gap-2 overflow-x-auto">
-            <button data-t="req" class="tab active px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold whitespace-nowrap">📋 الطلبات</button>
-            <button data-t="team" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">👥 الفريق</button>
-            <button data-t="clients" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">👤 العملاء</button>
-            <button data-t="types" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">📦 الأنواع</button>
-            <button data-t="btns" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">🔘 أزرار</button>
-            <button data-t="sal" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">💰 الرواتب</button>
-            <button data-t="cchat" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">💬 شات العملاء</button>
-            <button data-t="teamchat" class="tab px-4 py-2 rounded-lg hover:bg-slate-100 text-sm whitespace-nowrap">💬 شات الفريق</button>
+        <nav class="bg-white shadow-sm sticky top-0 z-20 border-b p-2 flex gap-1 overflow-x-auto">
+            <button data-t="req" class="tab active">📋 الطلبات</button>
+            <button data-t="team" class="tab">👥 الفريق</button>
+            <button data-t="clients" class="tab">👤 العملاء</button>
+            <button data-t="types" class="tab">📦 الأنواع</button>
+            <button data-t="btns" class="tab">🔘 أزرار</button>
+            <button data-t="sal" class="tab">💰 الرواتب</button>
+            <button data-t="cchat" class="tab">💬 شات العملاء</button>
+            <button data-t="teamchat" class="tab">💬 شات الفريق</button>
         </nav>
 
         <main class="max-w-7xl mx-auto p-4">
             <!-- Requests -->
             <section id="s-req">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
                         <h2 class="font-bold text-lg">📋 إدارة الطلبات</h2>
                         <button id="aReq" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow transition">➕ طلب جديد</button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-container">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b text-slate-600">
@@ -159,14 +163,14 @@
             <!-- Team -->
             <section id="s-team" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
-                    <div class="flex justify-between mb-4">
+                    <div class="flex justify-between mb-4 flex-wrap gap-2">
                         <h2 class="font-bold text-lg">👥 فريق العمل</h2>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 flex-wrap">
                             <button id="aEmp" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm transition">➕ موظف</button>
                             <button onclick="forceSync()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm transition">🔄 تحديث</button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-container">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b">
@@ -187,14 +191,14 @@
             <!-- Clients -->
             <section id="s-clients" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
-                    <div class="flex justify-between mb-4">
+                    <div class="flex justify-between mb-4 flex-wrap gap-2">
                         <h2 class="font-bold text-lg">👤 العملاء</h2>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 flex-wrap">
                             <button id="aCli" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm transition">➕ عميل</button>
                             <button onclick="forceSync()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm transition">🔄 تحديث</button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="table-container">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b">
@@ -216,7 +220,7 @@
             <!-- Types -->
             <section id="s-types" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
-                    <div class="flex justify-between mb-4">
+                    <div class="flex justify-between mb-4 flex-wrap gap-2">
                         <h2 class="font-bold text-lg">📦 أنواع الخدمات</h2>
                         <button id="aTyp" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm transition">➕ نوع</button>
                     </div>
@@ -227,7 +231,7 @@
             <!-- Buttons -->
             <section id="s-btns" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
-                    <div class="flex justify-between mb-4">
+                    <div class="flex justify-between mb-4 flex-wrap gap-2">
                         <h2 class="font-bold text-lg">🔘 أزرار الموظفين</h2>
                         <button id="aBtn" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm transition">➕ زر</button>
                     </div>
@@ -239,7 +243,7 @@
             <section id="s-sal" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <h2 class="font-bold text-lg mb-4">💰 طلبات الرواتب</h2>
-                    <div class="overflow-x-auto">
+                    <div class="table-container">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b">
@@ -258,16 +262,16 @@
             <!-- Client Chat -->
             <section id="s-cchat" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                    <div class="grid grid-cols-4 h-[65vh]">
-                        <div class="col-span-1 border-l bg-slate-50 p-3 overflow-y-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-4 h-[65vh]">
+                        <div class="md:col-span-1 border-l bg-slate-50 p-3 overflow-y-auto">
                             <h3 class="font-bold text-sm mb-2">👤 العملاء</h3>
                             <div id="cliList" class="space-y-1"></div>
                         </div>
-                        <div class="col-span-3 flex flex-col">
+                        <div class="md:col-span-3 flex flex-col">
                             <div id="cHead" class="p-3 border-b bg-slate-50 font-semibold">اختر عميلاً</div>
                             <div id="cBox" class="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50 to-white"></div>
-                            <div class="p-3 border-t flex gap-2">
-                                <input id="cIn" class="flex-1 border rounded-xl px-3 py-2 text-sm" placeholder="اكتب رسالة...">
+                            <div class="p-3 border-t flex gap-2 flex-wrap">
+                                <input id="cIn" class="flex-1 border rounded-xl px-3 py-2 text-sm min-w-[100px]" placeholder="اكتب رسالة...">
                                 <button id="cSend" class="bg-blue-600 text-white px-4 rounded-xl text-sm hover:bg-blue-700 transition">إرسال</button>
                                 <button id="cImg" class="bg-blue-600 text-white px-3 rounded-xl text-sm hover:bg-blue-700 transition">📎</button>
                                 <button id="cClearChat" class="bg-red-600 text-white px-3 rounded-xl text-sm hover:bg-red-700 transition">🗑️</button>
@@ -281,8 +285,8 @@
             <!-- Team Chat -->
             <section id="s-teamchat" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border overflow-hidden h-[70vh] flex flex-col">
-                    <div class="p-4 border-b bg-slate-800 text-white flex justify-between items-center">
-                        <div class="flex items-center gap-3">
+                    <div class="p-4 border-b bg-slate-800 text-white flex justify-between items-center flex-wrap gap-2">
+                        <div class="flex items-center gap-3 flex-wrap">
                             <h3 class="font-bold">💬 شات الفريق</h3>
                             <select id="teamChatSelect" class="chat-select text-slate-800">
                                 <option value="all">👥 المجموعة العامة</option>
@@ -290,14 +294,14 @@
                         </div>
                         <button id="clearTeamChat" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm transition">🗑️ مسح</button>
                     </div>
-                    <div class="flex-1 flex overflow-hidden">
-                        <div id="teamMembersList" class="w-48 bg-slate-50 border-l overflow-y-auto p-2 flex-shrink-0">
+                    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+                        <div id="teamMembersList" class="md:w-48 bg-slate-50 border-l overflow-y-auto p-2 flex-shrink-0">
                             <div class="text-xs font-bold text-slate-500 mb-2">👥 أعضاء الفريق</div>
                         </div>
                         <div class="flex-1 flex flex-col">
                             <div id="teamChatBox" class="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-slate-50 to-white"></div>
-                            <div class="p-3 border-t flex gap-2 bg-white">
-                                <input id="teamChatIn" class="flex-1 border rounded-xl px-3 py-2 text-sm" placeholder="اكتب رسالة...">
+                            <div class="p-3 border-t flex gap-2 bg-white flex-wrap">
+                                <input id="teamChatIn" class="flex-1 border rounded-xl px-3 py-2 text-sm min-w-[100px]" placeholder="اكتب رسالة...">
                                 <button id="teamChatSend" class="bg-slate-800 text-white px-4 rounded-xl text-sm hover:bg-slate-700 transition">إرسال</button>
                                 <button id="teamChatImg" class="bg-slate-800 text-white px-3 rounded-xl text-sm hover:bg-slate-700 transition">📎</button>
                                 <input type="file" id="teamFileInput" accept="image/*" class="hidden">
@@ -312,7 +316,7 @@
     <!-- ========== EMPLOYEE ========== -->
     <div id="employee" class="hidden min-h-screen bg-slate-50">
         <header class="bg-blue-700 text-white p-4 shadow">
-            <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
                 <div>
                     <div class="text-xs opacity-80">👤 مرحبا</div>
                     <div class="font-bold" id="eName"></div>
@@ -325,7 +329,7 @@
         <main class="max-w-6xl mx-auto p-4 grid lg:grid-cols-3 gap-4">
             <div class="lg:col-span-2 space-y-4">
                 <div class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4">
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
                         <div>
                             <div class="text-xs text-amber-700">💰 إجمالي العمولات</div>
                             <div class="text-2xl font-bold text-amber-900"><span id="eSal">0</span> ج.م</div>
@@ -354,8 +358,8 @@
                 <div class="bg-white rounded-2xl shadow-sm border p-4">
                     <h3 class="font-bold text-sm mb-2">💬 محادثة الإدارة</h3>
                     <div id="eChatA" class="h-32 overflow-y-auto bg-slate-50 rounded-xl p-2 text-xs mb-2"></div>
-                    <div class="flex gap-1">
-                        <input id="eInA" class="flex-1 border rounded-lg px-2 py-1.5 text-xs">
+                    <div class="flex gap-1 flex-wrap">
+                        <input id="eInA" class="flex-1 border rounded-lg px-2 py-1.5 text-xs min-w-[80px]">
                         <button id="eSendA" class="bg-blue-600 text-white px-3 rounded-lg text-xs hover:bg-blue-700 transition">ارسال</button>
                         <button id="eImgA" class="bg-blue-600 text-white px-2 rounded-lg text-xs hover:bg-blue-700 transition">📎</button>
                         <input type="file" id="eFileInputA" accept="image/*" class="hidden">
@@ -365,8 +369,8 @@
                     <h3 class="font-bold text-sm mb-2">👤 عملائي</h3>
                     <select id="eCliSel" class="w-full border rounded-lg p-1.5 text-xs mb-2"></select>
                     <div id="eChatC" class="h-28 overflow-y-auto bg-slate-50 rounded-xl p-2 text-xs mb-2"></div>
-                    <div class="flex gap-1">
-                        <input id="eInC" class="flex-1 border rounded-lg px-2 py-1.5 text-xs">
+                    <div class="flex gap-1 flex-wrap">
+                        <input id="eInC" class="flex-1 border rounded-lg px-2 py-1.5 text-xs min-w-[80px]">
                         <button id="eSendC" class="bg-blue-600 text-white px-3 rounded-lg text-xs hover:bg-blue-700 transition">ارسال</button>
                         <button id="eImgC" class="bg-blue-600 text-white px-2 rounded-lg text-xs hover:bg-blue-700 transition">📎</button>
                         <input type="file" id="eFileInputC" accept="image/*" class="hidden">
@@ -379,7 +383,7 @@
     <!-- ========== CLIENT ========== -->
     <div id="client" class="hidden min-h-screen bg-slate-50">
         <header class="bg-emerald-700 text-white p-4 shadow">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="max-w-4xl mx-auto flex justify-between items-center flex-wrap gap-2">
                 <div>
                     <div class="text-xs opacity-80">🏢 أهلاً بك</div>
                     <div class="font-bold" id="cName"></div>
@@ -391,7 +395,7 @@
         <main class="max-w-4xl mx-auto p-4 space-y-4">
             <div class="bg-white rounded-2xl shadow-sm border p-5">
                 <h2 class="font-bold mb-3">📋 طلباتي</h2>
-                <div class="overflow-x-auto">
+                <div class="table-container">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b text-slate-600">
@@ -409,8 +413,8 @@
             <div class="bg-white rounded-2xl shadow-sm border p-5">
                 <h2 class="font-bold mb-3">💬 تواصل معنا</h2>
                 <div id="cChat" class="h-64 overflow-y-auto bg-gradient-to-b from-slate-50 to-white rounded-xl p-3 border mb-3"></div>
-                <div class="flex gap-2">
-                    <input id="cInp" class="flex-1 border rounded-xl px-3 py-2 text-sm" placeholder="اكتب رسالتك...">
+                <div class="flex gap-2 flex-wrap">
+                    <input id="cInp" class="flex-1 border rounded-xl px-3 py-2 text-sm min-w-[120px]" placeholder="اكتب رسالتك...">
                     <button id="cSendBtn" class="bg-emerald-600 text-white px-5 rounded-xl text-sm font-semibold hover:bg-emerald-700 transition">إرسال</button>
                     <button id="cImgBtn" class="bg-emerald-600 text-white px-3 rounded-xl text-sm hover:bg-emerald-700 transition">📎</button>
                     <input type="file" id="cFileInputClient" accept="image/*" class="hidden">
@@ -421,7 +425,7 @@
 
     <!-- ========== MODAL ========== -->
     <div id="modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl">
+        <div class="bg-white rounded-2xl w-full max-w-md p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 id="mt" class="font-bold text-lg mb-3"></h3>
             <div id="mb"></div>
             <div class="flex justify-end gap-2 mt-4">
@@ -436,16 +440,16 @@
     <!-- ============================================= -->
     <script>
         // =============================================
-        // FIREBASE CONFIG - NEW!
+        // FIREBASE CONFIG - NEW PROJECT!
         // =============================================
         const firebaseConfig = {
-            apiKey: "AIzaSyBR8HOhNurHtpDXQQ7el8DbW-5kydA2hI8",
-            authDomain: "user-8bba7.firebaseapp.com",
-            projectId: "user-8bba7",
-            storageBucket: "user-8bba7.firebasestorage.app",
-            messagingSenderId: "816054611920",
-            appId: "1:816054611920:web:8b74a954704002cc8013d5",
-            measurementId: "G-NV8PHC8LEQ"
+            apiKey: "AIzaSyAQr8u0Tf02LATeDZWUAjZJIefHnj83Ckg",
+            authDomain: "mostafa-c1f9d.firebaseapp.com",
+            projectId: "mostafa-c1f9d",
+            storageBucket: "mostafa-c1f9d.firebasestorage.app",
+            messagingSenderId: "152575164717",
+            appId: "1:152575164717:web:c9aa14a0753f825d6a93a4",
+            measurementId: "G-H21TSGRPJ9"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -487,7 +491,8 @@
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
-        // =============================================        // FORCE SYNC - زر المزامنة الفورية
+        // =============================================
+        // FORCE SYNC - زر المزامنة الفورية
         // =============================================
         function forceSync() {
             showToast('🔄 جاري المزامنة مع السحابة...', 'info');
@@ -1535,8 +1540,9 @@
         document.querySelectorAll('.tab')?.forEach(b => {
             b.onclick = () => {
                 document.querySelectorAll('.tab').forEach(x => {
-                    x.classList.remove('bg-blue-600', 'text-white');
+                    x.classList.remove('active', 'bg-blue-600', 'text-white');
                 });
+                b.classList.add('active');
                 b.classList.add('bg-blue-600', 'text-white');
                 document.querySelectorAll('main section').forEach(s => s.classList.add('hidden'));
                 const target = document.getElementById('s-' + b.dataset.t);
@@ -1904,7 +1910,7 @@
         // START APP
         // =============================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Starting application with Firebase (user-8bba7)...');
+            console.log('🚀 Starting application with Firebase (mostafa-c1f9d)...');
             startListeners();
             setTimeout(() => {
                 document.getElementById('loading')?.classList.add('hidden');
@@ -1937,10 +1943,11 @@
             }
         });
 
-        console.log('🔥 Firebase connected! (Project: user-8bba7)');
+        console.log('🔥 Firebase connected! (Project: mostafa-c1f9d)');
         console.log('🔑 Admin: mostafa / 332004');
         console.log('📱 Open on multiple devices - all changes sync instantly!');
         console.log('🔄 Click "مزامنة فورية" button to force sync.');
+        console.log('📊 Data will appear on all devices automatically!');
     </script>
 </body>
 </html>
