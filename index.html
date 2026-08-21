@@ -72,6 +72,9 @@
         table { min-width: 600px; }
         .refresh-login-btn { background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; margin-right: 8px; transition: all 0.3s; }
         .refresh-login-btn:hover { background: #7c3aed; transform: scale(1.05); }
+        .live-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; }
+        .live-indicator.online { background: #22c55e; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         @media (max-width: 640px) { .tab { font-size: 12px; padding: 6px 10px; } }
     </style>
 </head>
@@ -98,6 +101,9 @@
                 </div>
                 <h1 class="text-2xl font-extrabold text-slate-800">شركة آسر</h1>
                 <p class="text-slate-500 text-sm">نظام إدارة متكامل</p>
+                <div class="mt-2 text-xs text-green-600">
+                    <span class="live-indicator online"></span> متصل بالسحابة
+                </div>
             </div>
             <div class="space-y-4">
                 <div class="flex gap-2 items-center">
@@ -110,7 +116,8 @@
                 <p id="err" class="text-red-500 text-xs text-center hidden">بيانات غير صحيحة</p>
             </div>
             <div class="mt-6 pt-4 border-t border-slate-100 text-center">
-                <p class="text-[10px] text-slate-400">🔄 تأكد من إضافة الموظفين من لوحة الإدارة أولاً</p>
+                <p class="text-[10px] text-slate-400">🔑 الإدارة: mostafa | 332004</p>
+                <p class="text-[10px] text-slate-400">🔄 جميع التغييرات تظهر فوراً على جميع الأجهزة</p>
             </div>
         </div>
     </div>
@@ -449,12 +456,9 @@
         </div>
     </div>
 
-    <!-- ============================================= -->
-    <!-- JAVASCRIPT -->
-    <!-- ============================================= -->
     <script>
         // =============================================
-        // FIREBASE CONFIG - NEW PROJECT!
+        // FIREBASE CONFIG
         // =============================================
         const firebaseConfig = {
             apiKey: "AIzaSyAQr8u0Tf02LATeDZWUAjZJIefHnj83Ckg",
@@ -470,7 +474,6 @@
         const db = firebase.firestore();
         const analytics = firebase.analytics();
 
-        // Enable offline persistence
         db.enablePersistence({ synchronizeTabs: true })
             .then(() => console.log('✅ Offline mode enabled'))
             .catch(err => console.warn('⚠️ Persistence error:', err));
@@ -483,7 +486,6 @@
         let curCli = null;
         let isDataLoaded = false;
         const $ = s => document.querySelector(s);
-        const $$ = s => document.querySelectorAll(s);
 
         const data = {
             team: [],
@@ -507,46 +509,43 @@
         }
 
         // =============================================
-        // REFRESH LOGIN DATA - زر تحديث في صفحة الدخول
+        // REFRESH LOGIN DATA
         // =============================================
         function refreshLoginData() {
             showToast('🔄 جاري تحديث بيانات تسجيل الدخول...', 'info');
             
-            // جلب الفريق
             db.collection('team').get().then(snapshot => {
                 data.team = [];
                 snapshot.forEach(doc => data.team.push({ id: doc.id, ...doc.data() }));
-                console.log('👥 Team loaded for login:', data.team.length);
-                showToast('✅ تم تحميل ' + data.team.length + ' موظف', 'success');
-                // عرض عدد الموظفين في صفحة الدخول
                 const debug = document.getElementById('loginDebug');
-                debug.classList.remove('hidden');
-                debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                if (debug) {
+                    debug.classList.remove('hidden');
+                    debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                }
+                showToast('✅ تم تحميل ' + data.team.length + ' موظف', 'success');
             }).catch(err => {
                 console.error('Error loading team:', err);
-                showToast('❌ خطأ في تحميل بيانات الموظفين', 'error');
             });
 
-            // جلب العملاء
             db.collection('clients').get().then(snapshot => {
                 data.clients = [];
                 snapshot.forEach(doc => data.clients.push({ id: doc.id, ...doc.data() }));
-                console.log('👤 Clients loaded for login:', data.clients.length);
                 const debug = document.getElementById('loginDebug');
-                debug.classList.remove('hidden');
-                debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                if (debug) {
+                    debug.classList.remove('hidden');
+                    debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                }
             }).catch(err => {
                 console.error('Error loading clients:', err);
             });
         }
 
         // =============================================
-        // FORCE SYNC - زر المزامنة الفورية
+        // FORCE SYNC
         // =============================================
         function forceSync() {
             showToast('🔄 جاري المزامنة مع السحابة...', 'info');
             
-            // جلب الفريق
             db.collection('team').get().then(snapshot => {
                 data.team = [];
                 snapshot.forEach(doc => data.team.push({ id: doc.id, ...doc.data() }));
@@ -560,7 +559,6 @@
                 console.error(err);
             });
 
-            // جلب العملاء
             db.collection('clients').get().then(snapshot => {
                 data.clients = [];
                 snapshot.forEach(doc => data.clients.push({ id: doc.id, ...doc.data() }));
@@ -573,52 +571,37 @@
                 console.error(err);
             });
 
-            // جلب الطلبات
             db.collection('requests').get().then(snapshot => {
                 data.requests = [];
                 snapshot.forEach(doc => data.requests.push({ id: doc.id, ...doc.data() }));
                 renderReq();
-            }).catch(err => {
-                console.error(err);
-            });
+            }).catch(err => console.error(err));
 
-            // جلب أنواع الخدمات
             db.collection('requestTypes').get().then(snapshot => {
                 data.requestTypes = [];
                 snapshot.forEach(doc => data.requestTypes.push({ id: doc.id, ...doc.data() }));
                 renderTyp();
-            }).catch(err => {
-                console.error(err);
-            });
+            }).catch(err => console.error(err));
 
-            // جلب الأزرار
             db.collection('employeeButtons').get().then(snapshot => {
                 data.employeeButtons = [];
                 snapshot.forEach(doc => data.employeeButtons.push({ id: doc.id, ...doc.data() }));
                 renderBtn();
-            }).catch(err => {
-                console.error(err);
-            });
+            }).catch(err => console.error(err));
 
-            // جلب الرواتب
             db.collection('salaryRequests').get().then(snapshot => {
                 data.salaryRequests = [];
                 snapshot.forEach(doc => data.salaryRequests.push({ id: doc.id, ...doc.data() }));
                 renderSal();
-            }).catch(err => {
-                console.error(err);
-            });
+            }).catch(err => console.error(err));
 
-            // جلب الشات
             db.collection('chats').get().then(snapshot => {
                 data.chats = {};
                 snapshot.forEach(doc => {
                     data.chats[doc.id] = doc.data().messages || [];
                 });
                 refreshAllChats();
-            }).catch(err => {
-                console.error(err);
-            });
+            }).catch(err => console.error(err));
         }
 
         // =============================================
@@ -627,7 +610,6 @@
         function startListeners() {
             console.log('🔥 Starting real-time listeners...');
 
-            // Team
             db.collection('team').onSnapshot(snapshot => {
                 data.team = [];
                 snapshot.forEach(doc => data.team.push({ id: doc.id, ...doc.data() }));
@@ -648,7 +630,6 @@
                 }
                 document.getElementById('loading')?.classList.add('hidden');
                 
-                // تحديث صفحة تسجيل الدخول
                 const debug = document.getElementById('loginDebug');
                 if (debug && !cur) {
                     debug.classList.remove('hidden');
@@ -660,7 +641,6 @@
                 document.getElementById('fbStatus').textContent = '🔴 غير متصل';
             });
 
-            // Clients
             db.collection('clients').onSnapshot(snapshot => {
                 data.clients = [];
                 snapshot.forEach(doc => data.clients.push({ id: doc.id, ...doc.data() }));
@@ -685,7 +665,6 @@
                 console.error('Clients error:', error);
             });
 
-            // Requests
             db.collection('requests').onSnapshot(snapshot => {
                 data.requests = [];
                 snapshot.forEach(doc => data.requests.push({ id: doc.id, ...doc.data() }));
@@ -713,7 +692,6 @@
                 console.error('Requests error:', error);
             });
 
-            // Request Types
             db.collection('requestTypes').onSnapshot(snapshot => {
                 data.requestTypes = [];
                 snapshot.forEach(doc => data.requestTypes.push({ id: doc.id, ...doc.data() }));
@@ -731,7 +709,6 @@
                 console.error('Types error:', error);
             });
 
-            // Employee Buttons
             db.collection('employeeButtons').onSnapshot(snapshot => {
                 data.employeeButtons = [];
                 snapshot.forEach(doc => data.employeeButtons.push({ id: doc.id, ...doc.data() }));
@@ -745,7 +722,6 @@
                 console.error('Buttons error:', error);
             });
 
-            // Salary Requests
             db.collection('salaryRequests').onSnapshot(snapshot => {
                 data.salaryRequests = [];
                 snapshot.forEach(doc => data.salaryRequests.push({ id: doc.id, ...doc.data() }));
@@ -755,7 +731,6 @@
                 console.error('Salary error:', error);
             });
 
-            // Chats
             db.collection('chats').onSnapshot(snapshot => {
                 data.chats = {};
                 snapshot.forEach(doc => {
@@ -769,9 +744,8 @@
         }
 
         // =============================================
-        // RENDER FUNCTIONS
+        // RENDER FUNCTIONS (مختصرة للطول)
         // =============================================
-
         function renderReq() {
             const tb = $('#tbReq');
             if (!tb) return;
@@ -789,7 +763,7 @@
                     <td class="p-3 notes-cell" title="${r.notes || ''}">${r.notes || '-'}</td>
                     <td class="p-3"><input type="checkbox" ${r.paid?'checked':''} onchange="setPaid('${r.id}',this.checked)" class="w-4 h-4 rounded"></td>
                     <td class="p-3 flex flex-wrap gap-1">
-                        <button onclick="transferToClient('${r.id}')" class="action-btn transfer-btn" title="ترحيل للعميل">📤 ترحيل</button>
+                        <button onclick="transferToClient('${r.id}')" class="action-btn transfer-btn">📤 ترحيل</button>
                         <button onclick="delReq('${r.id}')" class="action-btn del-btn">✕</button>
                     </td>
                 `;
@@ -823,10 +797,8 @@
                 `;
                 tb.appendChild(tr);
             });
-            
             const count = document.getElementById('teamCount');
             if (count) count.textContent = '📊 إجمالي الموظفين: ' + data.team.length;
-            
             populateTeamChatSelect();
             renderTeamMembersList();
         }
@@ -861,7 +833,6 @@
                 `;
                 tb.appendChild(tr);
             });
-            
             const count = document.getElementById('clientCount');
             if (count) count.textContent = '📊 إجمالي العملاء: ' + data.clients.length;
         }
@@ -1198,7 +1169,7 @@
         function setUserInactive(type, id) { updateUserStatus(type, id, 'inactive'); }
 
         // =============================================
-        // LOGIN - FIXED!
+        // LOGIN
         // =============================================
         function handleLogin() {
             const n = $('#ln').value.trim();
@@ -1209,7 +1180,6 @@
                 return;
             }
 
-            // ADMIN LOGIN
             if (n.toLowerCase() === 'mostafa' && p === '332004') {
                 cur = { role: 'admin' };
                 show('admin');
@@ -1218,24 +1188,14 @@
                 return;
             }
 
-            // Check if data is loaded
             if (!isDataLoaded) {
-                showToast('⏳ جاري تحميل البيانات، حاول مرة أخرى خلال ثواني', 'warning');
-                // محاولة تحميل البيانات
+                showToast('⏳ جاري تحميل البيانات، حاول مرة أخرى', 'warning');
                 refreshLoginData();
-                setTimeout(() => {
-                    showToast('🔄 حاول تسجيل الدخول مرة أخرى', 'info');
-                }, 2000);
                 return;
             }
 
-            // EMPLOYEE LOGIN - مع عرض Debug
-            console.log('🔍 Searching for employee:', n);
-            console.log('📊 Available employees:', data.team.map(t => t.name));
-            
             const emp = data.team.find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
             if (emp) {
-                console.log('✅ Employee found:', emp.name);
                 if (emp.status === 'inactive') {
                     showToast('⚠️ هذا الموظف غير نشط حالياً', 'error');
                     return;
@@ -1249,13 +1209,8 @@
                 return;
             }
 
-            // CLIENT LOGIN
-            console.log('🔍 Searching for client:', n);
-            console.log('📊 Available clients:', data.clients.map(c => c.name));
-            
             const client = data.clients.find(c => c.name && c.name.toLowerCase() === n.toLowerCase() && c.password === p);
             if (client) {
-                console.log('✅ Client found:', client.name);
                 if (client.status === 'inactive') {
                     showToast('⚠️ هذا العميل غير نشط حالياً', 'error');
                     return;
@@ -1269,17 +1224,16 @@
                 return;
             }
 
-            // If not found, show error with debug info
-            console.log('❌ User not found:', n);
             showToast('❌ اسم المستخدم أو كلمة السر غير صحيحة', 'error');
             $('#err').classList.remove('hidden');
             setTimeout(() => $('#err').classList.add('hidden'), 3000);
             
-            // Show debug info
             const debug = document.getElementById('loginDebug');
-            debug.classList.remove('hidden');
-            debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length + ' | 🔍 ابحث عن: ' + n;
-            debug.style.color = '#ef4444';
+            if (debug) {
+                debug.classList.remove('hidden');
+                debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length + ' | 🔍 ابحث عن: ' + n;
+                debug.style.color = '#ef4444';
+            }
         }
 
         // =============================================
@@ -1651,8 +1605,6 @@
         // =============================================
         // CHAT EVENTS
         // =============================================
-
-        // Admin client chat
         $('#cSend')?.addEventListener('click', () => {
             if (!curCli) return;
             const t = $('#cIn')?.value?.trim();
@@ -1680,7 +1632,6 @@
             clearClientChat(curCli);
         });
 
-        // Team chat
         $('#teamChatSend')?.addEventListener('click', () => {
             const t = $('#teamChatIn')?.value?.trim();
             if (!t) return;
@@ -1714,7 +1665,6 @@
 
         $('#teamChatSelect')?.addEventListener('change', loadTeamChatAdmin);
 
-        // Employee chat with admin
         $('#eSendA')?.addEventListener('click', () => {
             const t = $('#eInA')?.value?.trim();
             if (!t) return;
@@ -1736,7 +1686,6 @@
             reader.readAsDataURL(this.files[0]);
         });
 
-        // Employee chat with client
         $('#eSendC')?.addEventListener('click', () => {
             const id = $('#eCliSel')?.value;
             if (!id) return;
@@ -1762,7 +1711,6 @@
             reader.readAsDataURL(this.files[0]);
         });
 
-        // Client chat
         $('#cSendBtn')?.addEventListener('click', () => {
             const t = $('#cInp')?.value?.trim();
             if (!t) return;
@@ -1900,13 +1848,14 @@
                         status: 'inactive',
                         lastActive: new Date().toISOString()
                     }).then(() => {
+                        const name = e1.value.trim();
+                        const pass = e2.value.trim();
                         e1.value = '';
                         e2.value = '';
-                        showToast('✅ تم إضافة الموظف بنجاح!', 'success');
-                        showToast('🔑 اسم: ' + e1.value.trim() + ' | كلمة السر: ' + e2.value.trim(), 'info');
+                        showToast('✅ تم إضافة الموظف: ' + name + ' | كلمة السر: ' + pass, 'success');
                         closeM();
-                        // تحديث البيانات فوراً
                         refreshLoginData();
+                        forceSync();
                     }).catch(err => { console.error('Error:', err);
                         showToast('❌ حدث خطأ: ' + err.message, 'error'); });
                 }
@@ -1938,6 +1887,7 @@
                         showToast('✅ تم إضافة العميل بنجاح!', 'success');
                         closeM();
                         refreshLoginData();
+                        forceSync();
                     }).catch(err => { console.error('Error:', err);
                         showToast('❌ حدث خطأ: ' + err.message, 'error'); });
                 }
@@ -2012,20 +1962,16 @@
         // START APP
         // =============================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Starting application with Firebase (mostafa-c1f9d)...');
+            console.log('🚀 Starting application...');
             startListeners();
-            
-            // تحميل البيانات الأولية
             setTimeout(() => {
                 refreshLoginData();
             }, 1000);
-            
             setTimeout(() => {
                 document.getElementById('loading')?.classList.add('hidden');
             }, 3000);
         });
 
-        // Update last active
         setInterval(() => {
             if (cur && curId) {
                 const type = cur.role === 'employee' ? 'employee' : 'client';
@@ -2051,12 +1997,10 @@
             }
         });
 
-        console.log('🔥 Firebase connected! (Project: mostafa-c1f9d)');
+        console.log('🔥 Firebase connected!');
         console.log('🔑 Admin: mostafa / 332004');
-        console.log('📱 Open on multiple devices - all changes sync instantly!');
-        console.log('🔄 Click "مزامنة فورية" button to force sync.');
-        console.log('📊 Data will appear on all devices automatically!');
-        console.log('👥 To add employees, go to "الفريق" tab and click "➕ موظف"');
+        console.log('🌐 Open on multiple devices: https://mostafa-c1f9d.web.app');
+        console.log('🔄 All changes sync automatically across all devices!');
     </script>
 </body>
 </html>
