@@ -74,7 +74,11 @@
         .refresh-login-btn:hover { background: #7c3aed; transform: scale(1.05); }
         .live-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 6px; }
         .live-indicator.online { background: #22c55e; animation: pulse 1.5s infinite; }
+        .live-indicator.offline { background: #ef4444; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .login-debug { background: #1e293b; color: #94a3b8; padding: 8px 12px; border-radius: 8px; font-size: 11px; text-align: center; margin-top: 8px; }
+        .login-debug.success { color: #22c55e; }
+        .login-debug.error { color: #ef4444; }
         @media (max-width: 640px) { .tab { font-size: 12px; padding: 6px 10px; } }
     </style>
 </head>
@@ -101,18 +105,18 @@
                 </div>
                 <h1 class="text-2xl font-extrabold text-slate-800">شركة آسر</h1>
                 <p class="text-slate-500 text-sm">نظام إدارة متكامل</p>
-                <div class="mt-2 text-xs text-green-600">
-                    <span class="live-indicator online"></span> متصل بالسحابة
+                <div class="mt-2 text-xs" id="connectionStatus">
+                    <span class="live-indicator online"></span> <span id="statusText">متصل بالسحابة</span>
                 </div>
             </div>
             <div class="space-y-4">
                 <div class="flex gap-2 items-center">
-                    <input id="ln" placeholder="اسم المستخدم" class="flex-1 border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input id="ln" placeholder="اسم المستخدم" class="flex-1 border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value="احمد">
                     <button onclick="refreshLoginData()" class="refresh-login-btn" title="تحديث بيانات تسجيل الدخول">🔄</button>
                 </div>
-                <input id="lp" type="password" placeholder="الرقم السري" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                <input id="lp" type="password" placeholder="الرقم السري" class="w-full border p-3 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" value="1234">
                 <button id="btnIn" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition">تسجيل الدخول</button>
-                <div id="loginDebug" class="text-xs text-slate-400 text-center mt-2 hidden"></div>
+                <div id="loginDebug" class="login-debug hidden"></div>
                 <p id="err" class="text-red-500 text-xs text-center hidden">بيانات غير صحيحة</p>
             </div>
             <div class="mt-6 pt-4 border-t border-slate-100 text-center">
@@ -124,6 +128,7 @@
 
     <!-- ========== ADMIN ========== -->
     <div id="admin" class="hidden min-h-screen bg-slate-50">
+        <!-- نفس المحتوى السابق ... -->
         <header class="bg-slate-900 text-white p-4 shadow-lg">
             <div class="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-2">
                 <div class="flex items-center gap-3">
@@ -149,7 +154,7 @@
         </nav>
 
         <main class="max-w-7xl mx-auto p-4">
-            <!-- Requests -->
+            <!-- جميع الأقسام كما هي -->
             <section id="s-req">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
@@ -177,7 +182,6 @@
                 </div>
             </section>
 
-            <!-- Team -->
             <section id="s-team" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <div class="flex justify-between mb-4 flex-wrap gap-2">
@@ -207,7 +211,6 @@
                 </div>
             </section>
 
-            <!-- Clients -->
             <section id="s-clients" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <div class="flex justify-between mb-4 flex-wrap gap-2">
@@ -238,7 +241,6 @@
                 </div>
             </section>
 
-            <!-- Types -->
             <section id="s-types" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <div class="flex justify-between mb-4 flex-wrap gap-2">
@@ -249,7 +251,6 @@
                 </div>
             </section>
 
-            <!-- Buttons -->
             <section id="s-btns" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <div class="flex justify-between mb-4 flex-wrap gap-2">
@@ -260,7 +261,6 @@
                 </div>
             </section>
 
-            <!-- Salary -->
             <section id="s-sal" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border p-5">
                     <h2 class="font-bold text-lg mb-4">💰 طلبات الرواتب</h2>
@@ -280,7 +280,6 @@
                 </div>
             </section>
 
-            <!-- Client Chat -->
             <section id="s-cchat" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
                     <div class="grid grid-cols-1 md:grid-cols-4 h-[65vh]">
@@ -303,7 +302,6 @@
                 </div>
             </section>
 
-            <!-- Team Chat -->
             <section id="s-teamchat" class="hidden">
                 <div class="bg-white rounded-2xl shadow-sm border overflow-hidden h-[70vh] flex flex-col">
                     <div class="p-4 border-b bg-slate-800 text-white flex justify-between items-center flex-wrap gap-2">
@@ -485,6 +483,7 @@
             curId = null;
         let curCli = null;
         let isDataLoaded = false;
+        let dataLoadAttempts = 0;
         const $ = s => document.querySelector(s);
 
         const data = {
@@ -505,39 +504,79 @@
             toast.textContent = message;
             toast.className = 'toast ' + type;
             setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => toast.classList.remove('show'), 3500);
+            setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
         // =============================================
-        // REFRESH LOGIN DATA
+        // UPDATE LOGIN DEBUG
+        // =============================================
+        function updateLoginDebug(message, type = 'info') {
+            const debug = document.getElementById('loginDebug');
+            if (!debug) return;
+            debug.classList.remove('hidden');
+            debug.className = 'login-debug ' + type;
+            debug.textContent = message;
+        }
+
+        // =============================================
+        // REFRESH LOGIN DATA - مع تأكيد التحميل
         // =============================================
         function refreshLoginData() {
             showToast('🔄 جاري تحديث بيانات تسجيل الدخول...', 'info');
+            updateLoginDebug('⏳ جاري تحميل البيانات من السحابة...', 'info');
             
+            let teamLoaded = false;
+            let clientsLoaded = false;
+
+            // جلب الفريق
             db.collection('team').get().then(snapshot => {
                 data.team = [];
                 snapshot.forEach(doc => data.team.push({ id: doc.id, ...doc.data() }));
-                const debug = document.getElementById('loginDebug');
-                if (debug) {
-                    debug.classList.remove('hidden');
-                    debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                teamLoaded = true;
+                console.log('👥 Team loaded:', data.team.length);
+                
+                if (teamLoaded && clientsLoaded) {
+                    updateLoginDebug('✅ تم تحميل ' + data.team.length + ' موظف و ' + data.clients.length + ' عميل', 'success');
+                    showToast('✅ تم تحميل ' + data.team.length + ' موظف', 'success');
+                    isDataLoaded = true;
+                } else {
+                    updateLoginDebug('👥 ' + data.team.length + ' موظف | ' + data.clients.length + ' عميل (جاري التحميل...)', 'info');
                 }
-                showToast('✅ تم تحميل ' + data.team.length + ' موظف', 'success');
             }).catch(err => {
                 console.error('Error loading team:', err);
+                updateLoginDebug('❌ خطأ في تحميل الموظفين: ' + err.message, 'error');
+                showToast('❌ خطأ في تحميل بيانات الموظفين', 'error');
             });
 
+            // جلب العملاء
             db.collection('clients').get().then(snapshot => {
                 data.clients = [];
                 snapshot.forEach(doc => data.clients.push({ id: doc.id, ...doc.data() }));
-                const debug = document.getElementById('loginDebug');
-                if (debug) {
-                    debug.classList.remove('hidden');
-                    debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                clientsLoaded = true;
+                console.log('👤 Clients loaded:', data.clients.length);
+                
+                if (teamLoaded && clientsLoaded) {
+                    updateLoginDebug('✅ تم تحميل ' + data.team.length + ' موظف و ' + data.clients.length + ' عميل', 'success');
+                    showToast('✅ تم تحميل ' + data.clients.length + ' عميل', 'success');
+                    isDataLoaded = true;
+                } else {
+                    updateLoginDebug('👥 ' + data.team.length + ' موظف | ' + data.clients.length + ' عميل (جاري التحميل...)', 'info');
                 }
             }).catch(err => {
                 console.error('Error loading clients:', err);
+                updateLoginDebug('❌ خطأ في تحميل العملاء: ' + err.message, 'error');
             });
+
+            // محاولة إعادة التحميل بعد 3 ثواني إذا لم يتم التحميل
+            setTimeout(() => {
+                if (!isDataLoaded && dataLoadAttempts < 3) {
+                    dataLoadAttempts++;
+                    updateLoginDebug('🔄 محاولة إعادة التحميل (' + dataLoadAttempts + '/3)...', 'warning');
+                    refreshLoginData();
+                } else if (!isDataLoaded) {
+                    updateLoginDebug('⚠️ تعذر تحميل البيانات. تأكد من الاتصال بالإنترنت.', 'error');
+                }
+            }, 3000);
         }
 
         // =============================================
@@ -554,6 +593,7 @@
                 populateTeamChatSelect();
                 renderTeamMembersList();
                 showToast('✅ تم تحديث الفريق (' + data.team.length + ')', 'success');
+                isDataLoaded = true;
             }).catch(err => {
                 showToast('❌ خطأ في مزامنة الفريق', 'error');
                 console.error(err);
@@ -617,6 +657,7 @@
                 isDataLoaded = true;
                 document.getElementById('fbStatus').className = 'firebase-status';
                 document.getElementById('fbStatus').textContent = '🟢 متصل (' + data.team.length + ' موظف)';
+                document.getElementById('statusText').textContent = 'متصل (' + data.team.length + ' موظف)';
                 
                 if (cur?.role === 'admin') {
                     renderTeam();
@@ -630,15 +671,18 @@
                 }
                 document.getElementById('loading')?.classList.add('hidden');
                 
+                // تحديث صفحة الدخول
                 const debug = document.getElementById('loginDebug');
                 if (debug && !cur) {
                     debug.classList.remove('hidden');
-                    debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                    debug.className = 'login-debug success';
+                    debug.textContent = '✅ ' + data.team.length + ' موظف | ' + data.clients.length + ' عميل';
                 }
             }, error => {
                 console.error('Team error:', error);
                 document.getElementById('fbStatus').className = 'firebase-status offline';
                 document.getElementById('fbStatus').textContent = '🔴 غير متصل';
+                document.getElementById('statusText').textContent = 'غير متصل';
             });
 
             db.collection('clients').onSnapshot(snapshot => {
@@ -649,7 +693,8 @@
                 const debug = document.getElementById('loginDebug');
                 if (debug && !cur) {
                     debug.classList.remove('hidden');
-                    debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length;
+                    debug.className = 'login-debug success';
+                    debug.textContent = '✅ ' + data.team.length + ' موظف | ' + data.clients.length + ' عميل';
                 }
                 
                 if (cur?.role === 'admin') {
@@ -744,7 +789,7 @@
         }
 
         // =============================================
-        // RENDER FUNCTIONS (مختصرة للطول)
+        // RENDER FUNCTIONS (مختصرة)
         // =============================================
         function renderReq() {
             const tb = $('#tbReq');
@@ -1180,6 +1225,7 @@
                 return;
             }
 
+            // ADMIN LOGIN
             if (n.toLowerCase() === 'mostafa' && p === '332004') {
                 cur = { role: 'admin' };
                 show('admin');
@@ -1188,14 +1234,25 @@
                 return;
             }
 
-            if (!isDataLoaded) {
-                showToast('⏳ جاري تحميل البيانات، حاول مرة أخرى', 'warning');
+            // التحقق من تحميل البيانات
+            if (!isDataLoaded || data.team.length === 0) {
+                showToast('⏳ جاري تحميل البيانات... حاول مرة أخرى', 'warning');
+                updateLoginDebug('⏳ جاري تحميل البيانات من السحابة...', 'info');
                 refreshLoginData();
+                // محاولة تسجيل الدخول مرة أخرى بعد ثانيتين
+                setTimeout(() => {
+                    handleLogin();
+                }, 2000);
                 return;
             }
 
+            // EMPLOYEE LOGIN
+            console.log('🔍 Searching for employee:', n);
+            console.log('📊 Available employees:', data.team.map(t => t.name));
+            
             const emp = data.team.find(t => t.name && t.name.toLowerCase() === n.toLowerCase() && t.password === p);
             if (emp) {
+                console.log('✅ Employee found:', emp.name);
                 if (emp.status === 'inactive') {
                     showToast('⚠️ هذا الموظف غير نشط حالياً', 'error');
                     return;
@@ -1209,8 +1266,13 @@
                 return;
             }
 
+            // CLIENT LOGIN
+            console.log('🔍 Searching for client:', n);
+            console.log('📊 Available clients:', data.clients.map(c => c.name));
+            
             const client = data.clients.find(c => c.name && c.name.toLowerCase() === n.toLowerCase() && c.password === p);
             if (client) {
+                console.log('✅ Client found:', client.name);
                 if (client.status === 'inactive') {
                     showToast('⚠️ هذا العميل غير نشط حالياً', 'error');
                     return;
@@ -1224,16 +1286,13 @@
                 return;
             }
 
+            // If not found
+            console.log('❌ User not found:', n);
             showToast('❌ اسم المستخدم أو كلمة السر غير صحيحة', 'error');
             $('#err').classList.remove('hidden');
             setTimeout(() => $('#err').classList.add('hidden'), 3000);
             
-            const debug = document.getElementById('loginDebug');
-            if (debug) {
-                debug.classList.remove('hidden');
-                debug.innerHTML = '👥 عدد الموظفين: ' + data.team.length + ' | 👤 عدد العملاء: ' + data.clients.length + ' | 🔍 ابحث عن: ' + n;
-                debug.style.color = '#ef4444';
-            }
+            updateLoginDebug('❌ المستخدم "' + n + '" غير موجود. عدد الموظفين: ' + data.team.length, 'error');
         }
 
         // =============================================
@@ -1964,14 +2023,25 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Starting application...');
             startListeners();
+            
+            // تحميل البيانات فوراً
             setTimeout(() => {
                 refreshLoginData();
-            }, 1000);
+            }, 500);
+            
+            // محاولة تحميل البيانات مرة أخرى بعد 3 ثواني
+            setTimeout(() => {
+                if (!isDataLoaded) {
+                    refreshLoginData();
+                }
+            }, 3000);
+            
             setTimeout(() => {
                 document.getElementById('loading')?.classList.add('hidden');
-            }, 3000);
+            }, 2000);
         });
 
+        // تحديث النشاط
         setInterval(() => {
             if (cur && curId) {
                 const type = cur.role === 'employee' ? 'employee' : 'client';
@@ -2001,6 +2071,7 @@
         console.log('🔑 Admin: mostafa / 332004');
         console.log('🌐 Open on multiple devices: https://mostafa-c1f9d.web.app');
         console.log('🔄 All changes sync automatically across all devices!');
+        console.log('📊 If data not showing, click the 🔄 button next to username.');
     </script>
 </body>
 </html>
