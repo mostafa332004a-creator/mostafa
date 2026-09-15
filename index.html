@@ -12,6 +12,7 @@
   .from-employee{background:#e0f2fe;color:#075985;margin-left:auto;border:1px solid #bae6fd}
   .from-client{background:#fef3c7;color:#92400e;margin-right:auto;border:1px solid #fde68a}
   .from-system{background:#f1f5f9;color:#334155;margin:auto;border:1px solid #e2e8f0;font-style:italic;text-align:center}
+  .chat-bubble.pending{opacity:.6}
   .glass{background:rgba(255,255,255,.95);backdrop-filter:blur(12px)}
   .hidden{display:none}
   ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
@@ -274,8 +275,8 @@
 
 <script type="module">
 /* =========================================================
-   شركة آسر — Firebase Realtime Database فقط (بدون Storage)
-   الدردشة نصية فقط — لا صور، لا فيديو، لا تسجيل صوتي
+   شركة آسر — Firebase Realtime Database فقط
+   ✅ إصلاح: تحديث فوري (Optimistic UI) + دمج رسائل معلّقة
    ========================================================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
@@ -295,7 +296,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-/* ================== أدوات مساعدة ================== */
 const $ = s => document.querySelector(s);
 
 let cur = null;
@@ -342,7 +342,6 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* ================== حساب رصيد الموظف ================== */
 function getEmployeeTotals(empId){
   const clients = DB.g('clients').filter(c => c.assignedEmployeeId === empId && c.status !== 'inactive');
   const totalCommission = clients.reduce((s,c) => s + (Number(c.commission)||0), 0);
@@ -353,7 +352,6 @@ function getEmployeeTotals(empId){
   return { totalCommission, approvedTotal, balance, clientsCount: clients.length };
 }
 
-/* ================== Toast ================== */
 let toastTimer = null;
 function showToast(msg, ms = 0){
   const t = $('#statusToast');
@@ -367,13 +365,11 @@ function hideToast(){
   if (toastTimer){ clearTimeout(toastTimer); toastTimer = null; }
 }
 
-/* ================== طبقة الوصول للبيانات ================== */
 const DB = { g: k => cache[k] || [] };
 const saveItem   = (k, item)      => set(ref(db, k + '/' + item.id), item);
 const updateItem = (k, id, patch) => update(ref(db, k + '/' + id), patch);
 const removeItem = (k, id)        => remove(ref(db, k + '/' + id));
 
-/* ================== مؤشر الاتصال ================== */
 const netBar = $('#netBar');
 function setNet(state){
   if (state === 'on'){
@@ -385,7 +381,6 @@ function setNet(state){
 }
 onValue(ref(db, '.info/connected'), s => setNet(s.val() ? 'on' : 'off'));
 
-/* ================== الاستماع الحيّ ================== */
 const COLLECTIONS = ['team','clients','requests','requestTypes','employeeButtons','salaryRequests'];
 COLLECTIONS.forEach(key => {
   onValue(ref(db, key), snap => {
@@ -422,9 +417,13 @@ function onSchedulesChange(){
   if (cur.role === 'employee') renderEmployeeSchedule();
 }
 
-/* ================== الشات (نصي فقط) ================== */
+/* ================== الشات (نصي فقط - مُحسَّن) ================== */
 const chatCallbacks = {};
 const startedChats  = new Set();
+
+function triggerChatRenders(chatId){
+  (chatCallbacks[chatId] || []).forEach(f => { try { f(); } catch(e){ console.error(e); } });
+}
 
 function subscribeChat(chatId, cb){
   if (!chatCallbacks[chatId]) chatCallbacks[chatId] = [];
@@ -432,23 +431,52 @@ function subscribeChat(chatId, cb){
   if (startedChats.has(chatId)) { cb && cb(); return; }
   startedChats.add(chatId);
   onValue(ref(db, 'chats/' + chatId), snap => {
-    const msgs = [];
-    snap.forEach(ch => msgs.push({ _k: ch.key, ...ch.val() }));
-    cache.chats[chatId] = msgs;
-    (chatCallbacks[chatId] || []).forEach(f => { try { f(); } catch(e){ console.error(e); } });
+    const serverMsgs = [];
+    snap.forEach(ch => {
+      const val = ch.val();
+      if (val && typeof val === 'object') {
+        serverMsgs.push({ _k: ch.key, ...val });
+      }
+    });
+    // ⚡ ادمج الرسائل المعلّقة (المحلية) مع رسائل الخادم لتفادي اختفاء الرسائل أثناء الرفع
+    const existing = cache.chats[chatId] || [];
+    const pending = existing.filter(m => m._k && String(m._k).startsWith('_local_'));
+    const serverKeys = new Set(serverMsgs.map(m => (m.ts||0) + '|' + (m.text||'') + '|' + (m.from||'')));
+    const stillPending = pending.filter(p => !serverKeys.has((p.ts||0) + '|' + (p.text||'') + '|' + (p.from||'')));
+    cache.chats[chatId] = [...serverMsgs, ...stillPending];
+    triggerChatRenders(chatId);
   }, err => console.error('chat err', chatId, err));
 }
 
-function sendChatMessage(chatId, msg){
+/* ✅ الإصلاح الرئيسي: عرض فوري للرسالة قبل تأكيد الخادم */
+async function sendChatMessage(chatId, msg){
   const payload = { ts: Date.now() };
-  if (msg.from) payload.from = msg.from;
-  if (msg.name) payload.name = msg.name;
-  if (msg.text) payload.text = msg.text;
-  return push(ref(db, 'chats/' + chatId), payload);
+  if (msg.from) payload.from = String(msg.from);
+  if (msg.name) payload.name = String(msg.name);
+  if (msg.text) payload.text = String(msg.text);
+
+  // 1) أضف الرسالة محلياً أولاً (Optimistic UI)
+  if (!cache.chats[chatId]) cache.chats[chatId] = [];
+  const optimisticKey = '_local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  cache.chats[chatId].push({ _k: optimisticKey, ...payload, _pending: true });
+  triggerChatRenders(chatId);
+
+  // 2) أرسل إلى Firebase
+  try {
+    await push(ref(db, 'chats/' + chatId), payload);
+    // سيصل تحديث onValue ويستبدل الرسالة المعلّقة بالنسخة الرسمية
+  } catch (e) {
+    console.error('Push failed for chat', chatId, e);
+    cache.chats[chatId] = cache.chats[chatId].filter(m => m._k !== optimisticKey);
+    triggerChatRenders(chatId);
+    throw e;
+  }
 }
+
 function clearChat(chatId){ return remove(ref(db, 'chats/' + chatId)); }
 
 function renderChatMessages(container, chatId){
+  if (!container) return;
   const messages = cache.chats[chatId] || [];
   container.innerHTML = '';
   if (messages.length === 0){
@@ -456,30 +484,33 @@ function renderChatMessages(container, chatId){
     return;
   }
   messages.forEach(msg => {
-    const div = document.createElement('div');
-    let cls = 'chat-bubble ';
-    if (msg.from === 'admin')         cls += 'from-admin';
-    else if (msg.from === 'employee') cls += 'from-employee';
-    else if (msg.from === 'client')   cls += 'from-client';
-    else                              cls += 'from-system';
-    div.className = cls;
+    try {
+      const div = document.createElement('div');
+      let cls = 'chat-bubble ';
+      if (msg.from === 'admin')         cls += 'from-admin';
+      else if (msg.from === 'employee') cls += 'from-employee';
+      else if (msg.from === 'client')   cls += 'from-client';
+      else                              cls += 'from-system';
+      if (msg._pending) cls += ' pending';
+      div.className = cls;
 
-    if (msg.name){
-      const nm = document.createElement('div');
-      nm.className = 'text-[10px] opacity-75 font-bold mb-0.5';
-      nm.textContent = msg.name;
-      div.appendChild(nm);
-    }
-    const sp = document.createElement('span');
-    sp.textContent = msg.text || '';
-    div.appendChild(sp);
-    container.appendChild(div);
+      if (msg.name){
+        const nm = document.createElement('div');
+        nm.className = 'text-[10px] opacity-75 font-bold mb-0.5';
+        nm.textContent = msg.name;
+        div.appendChild(nm);
+      }
+      const sp = document.createElement('span');
+      sp.textContent = msg.text || '';
+      div.appendChild(sp);
+      container.appendChild(div);
+    } catch(e){ console.error('render msg error', e, msg); }
   });
   container.scrollTop = container.scrollHeight;
 }
 
-/* ================== ربط Enter للإرسال ================== */
 function bindEnterToSend(inputEl, sendFn){
+  if (!inputEl) return;
   inputEl.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey){
       e.preventDefault();
@@ -488,7 +519,7 @@ function bindEnterToSend(inputEl, sendFn){
   });
 }
 
-/* ================== حالة الاتصال للمستخدمين ================== */
+/* ================== حالة الاتصال ================== */
 function isOnline(item){
   if (!item || !item.online) return false;
   if (!item.lastActive) return true;
@@ -1092,7 +1123,8 @@ function initAdminClientChat(){
   const sendText = () => {
     if (!curCli) return;
     const t = $('#cIn').value.trim(); if (!t) return;
-    sendChatMessage('client_' + curCli, { from:'admin', name:'الإدارة', text:t });
+    sendChatMessage('client_' + curCli, { from:'admin', name:'الإدارة', text:t })
+      .catch(e => alert('فشل الإرسال: ' + (e.message||e)));
     $('#cIn').value = '';
   };
   $('#cSend').onclick = sendText;
@@ -1117,11 +1149,6 @@ function getTeamChatId(){
   const sel = $('#teamChatSelect');
   if (!sel || sel.value === 'all') return 'team_chat_all';
   return sel.value;
-}
-function getTeamChatCtx(){
-  const chatId = getTeamChatId();
-  const isGroup = chatId === 'team_chat_all';
-  return { chatId, from: 'admin', name: isGroup ? 'الإدارة' : 'الإدارة' };
 }
 function loadTeamChatAdmin(){
   const chatId = getTeamChatId();
@@ -1152,7 +1179,8 @@ function initAdminTeamChat(){
   $('#teamChatSelect').onchange = loadTeamChatAdmin;
   const sendText = () => {
     const t = $('#teamChatIn').value.trim(); if (!t) return;
-    sendChatMessage(getTeamChatId(), { ...getTeamChatCtx(), text: t });
+    sendChatMessage(getTeamChatId(), { from: 'admin', name: 'الإدارة', text: t })
+      .catch(e => alert('فشل الإرسال: ' + (e.message||e)));
     $('#teamChatIn').value = '';
   };
   $('#teamChatSend').onclick = sendText;
@@ -1250,10 +1278,6 @@ function currentEmpChatId(){
   const v = $('#eChatTarget').value;
   return v === 'group' ? 'team_chat_all' : 'emp_' + curId;
 }
-function getEmpChatCtx(){
-  const chatId = currentEmpChatId();
-  return { chatId, from: 'employee', name: cur.name };
-}
 function loadEmpA(){
   const chatId = currentEmpChatId();
   subscribeChat(chatId, () => { if (currentEmpChatId() === chatId) renderChatMessages($('#eChatA'), chatId); });
@@ -1263,7 +1287,9 @@ function initEmpAdminChat(){
   $('#eChatTarget').onchange = loadEmpA;
   const sendText = () => {
     const t = $('#eInA').value.trim(); if (!t) return;
-    sendChatMessage(currentEmpChatId(), { ...getEmpChatCtx(), text: t });
+    const chatId = currentEmpChatId();
+    sendChatMessage(chatId, { from: 'employee', name: cur.name, text: t })
+      .catch(e => alert('فشل الإرسال: ' + (e.message||e)));
     $('#eInA').value = '';
   };
   $('#eSendA').onclick = sendText;
@@ -1290,7 +1316,8 @@ function initEmpClientChat(){
   const sendText = () => {
     const id = $('#eCliSel').value; const t = $('#eInC').value.trim();
     if (!id || !t) return;
-    sendChatMessage('client_' + id, { from:'employee', name: cur.name, text: t });
+    sendChatMessage('client_' + id, { from:'employee', name: cur.name, text: t })
+      .catch(e => alert('فشل الإرسال: ' + (e.message||e)));
     $('#eInC').value = '';
   };
   $('#eSendC').onclick = sendText;
@@ -1371,7 +1398,8 @@ function initCli(){
 
   const sendText = () => {
     const t = $('#cInp').value.trim(); if (!t) return;
-    sendChatMessage('client_' + curId, { from:'client', name: cur.name, text: t });
+    sendChatMessage('client_' + curId, { from:'client', name: cur.name, text: t })
+      .catch(e => alert('فشل الإرسال: ' + (e.message||e)));
     $('#cInp').value = '';
   };
   $('#cSendBtn').onclick = sendText;
@@ -1412,7 +1440,6 @@ window.addEventListener('beforeunload', () => {
   } catch(e){ console.error('seed error', e); }
 })();
 
-/* ================== تصدير الدوال للـ HTML ================== */
 Object.assign(window, {
   logout,
   transferToClient, setDeliveryDate, setPaid, delReq,
