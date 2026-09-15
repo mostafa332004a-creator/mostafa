@@ -280,8 +280,8 @@
 
 <script type="module">
 /* =========================================================
-   شركة آسر — Firebase + Storage (صور، فيديو، تسجيل صوتي)
-   + خصم الراتب من رصيد الموظف عند التأكيد
+   شركة آسر — Firebase + Storage
+   ✅ إصلاح: إزالة القيم undefined قبل الحفظ في Firebase
    ========================================================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import {
@@ -353,7 +353,6 @@ function escapeHtml(s){
 }
 
 /* ================== حساب رصيد الموظف ================== */
-/* الرصيد = مجموع عمولات العملاء - مجموع الرواتب المعتمدة */
 function getEmployeeTotals(empId){
   const clients = DB.g('clients').filter(c => c.assignedEmployeeId === empId && c.status !== 'inactive');
   const totalCommission = clients.reduce((s,c) => s + (Number(c.commission)||0), 0);
@@ -450,9 +449,27 @@ function subscribeChat(chatId, cb){
   }, err => console.error('chat err', chatId, err));
 }
 
+/* ✅✅✅ الإصلاح الجوهري: تنظيف القيم undefined قبل الحفظ */
+function cleanForFirebase(obj){
+  const clean = {};
+  Object.keys(obj).forEach(k => {
+    const v = obj[k];
+    if (v === undefined) return;        // تخطي undefined تماماً
+    if (v === null) { clean[k] = null; return; }
+    if (typeof v === 'object' && !Array.isArray(v)){
+      const nested = cleanForFirebase(v);
+      // لو الكائن أصبح فارغاً، لا تحفظه
+      if (Object.keys(nested).length > 0) clean[k] = nested;
+    } else {
+      clean[k] = v;
+    }
+  });
+  return clean;
+}
+
 function sendChatMessage(chatId, msg){
-  msg.ts = Date.now();
-  return push(ref(db, 'chats/' + chatId), msg);
+  const payload = cleanForFirebase({ ...msg, ts: Date.now() });
+  return push(ref(db, 'chats/' + chatId), payload);
 }
 function clearChat(chatId){ return remove(ref(db, 'chats/' + chatId)); }
 
@@ -1234,8 +1251,6 @@ function renderSal(){
     tb.appendChild(tr);
   });
 }
-
-/* ✅ تأكيد الراتب → يُخصم من رصيد الموظف تلقائياً */
 async function apSal(id){
   const req = DB.g('salaryRequests').find(s => s.id === id);
   if (!req) return;
@@ -1252,16 +1267,12 @@ async function apSal(id){
     console.error(e);
   }
 }
-
-/* رفض طلب الراتب (حذفه بدون خصم) */
 async function rejSal(id){
   const req = DB.g('salaryRequests').find(s => s.id === id);
   if (!req) return;
   if (!confirm('رفض طلب ' + req.employeeName + ' بمبلغ ' + req.amount + ' ج؟\n\nسيتم حذف الطلب بدون خصم.')) return;
   await removeItem('salaryRequests', id);
 }
-
-/* حذف سجل راتب معتمد (سيؤدي لإرجاع المبلغ لرصيد الموظف) */
 async function delSal(id){
   if (!confirm('حذف سجل الراتب المعتمد؟\n\nملاحظة: سيتم إرجاع المبلغ إلى رصيد الموظف.')) return;
   await removeItem('salaryRequests', id);
@@ -1327,7 +1338,8 @@ function getTeamChatId(){
 function getTeamChatCtx(){
   const chatId = getTeamChatId();
   const isGroup = chatId === 'team_chat_all';
-  return { chatId, from: 'admin', name: isGroup ? 'الإدارة' : undefined };
+  // ✅ دايماً نحدد الاسم — أبداً ما نرجّع undefined
+  return { chatId, from: 'admin', name: isGroup ? 'الإدارة' : 'الإدارة' };
 }
 function loadTeamChatAdmin(){
   const chatId = getTeamChatId();
@@ -1408,8 +1420,6 @@ function fillEmpTypes(){
   sel.innerHTML = DB.g('requestTypes').map(t => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)} - ${t.price}ج</option>`).join('');
   if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
 }
-
-/* 🆕 حساب وعرض رصيد الموظف (بعد خصم الرواتب المعتمدة) */
 function updateEmployeeSalary(){
   const totals = getEmployeeTotals(curId);
   $('#eSal').textContent = totals.balance;
@@ -1418,8 +1428,6 @@ function updateEmployeeSalary(){
   const paidEl  = $('#ePaid');      if (paidEl)  paidEl.textContent = totals.approvedTotal;
   if (cur) cur.salary = totals.balance;
 }
-
-/* 🆕 عرض سجل الرواتب المستلمة للموظف */
 function renderEmployeeSalaryHistory(){
   const box = $('#eSalHistory'); if (!box) return;
   const list = DB.g('salaryRequests')
@@ -1439,7 +1447,6 @@ function renderEmployeeSalaryHistory(){
     }).join('') +
     (list.length > 5 ? '<div class="text-[10px] text-amber-600 mt-1">+ ' + (list.length - 5) + ' سجل أقدم</div>' : '');
 }
-
 function renderEmployeeSchedule(){
   const box = $('#eSchedule'); if (!box || !curId) return;
   const sched = (cache.schedules && cache.schedules[curId]) || {};
@@ -1460,7 +1467,6 @@ function renderEmployeeSchedule(){
       </div>`;
   }).join('');
 }
-
 function currentEmpChatId(){
   const v = $('#eChatTarget').value;
   return v === 'group' ? 'team_chat_all' : 'emp_' + curId;
@@ -1468,7 +1474,8 @@ function currentEmpChatId(){
 function getEmpChatCtx(){
   const chatId = currentEmpChatId();
   const isGroup = chatId === 'team_chat_all';
-  return { chatId, from: 'employee', name: isGroup ? cur.name : undefined };
+  // ✅ دايماً نحدد الاسم — أبداً ما نرجّع undefined
+  return { chatId, from: 'employee', name: cur.name };
 }
 function loadEmpA(){
   const chatId = currentEmpChatId();
@@ -1523,7 +1530,6 @@ function initEmpClientChat(){
   bindFileInput($('#eFileInputC'), getEmpClientCtx);
   createVoiceRecorder($('#eMicC'), getEmpClientCtx);
 }
-
 function initEmp(){
   $('#eName').textContent = cur.name;
   fillEmpTypes();
@@ -1537,7 +1543,6 @@ function initEmp(){
   loadEmpClients();
   initEmpClientChat();
 }
-
 $('#eForm').onsubmit = e => {
   e.preventDefault();
   const ty = DB.g('requestTypes').find(t => t.name === $('#er3').value);
@@ -1557,8 +1562,6 @@ $('#eForm').onsubmit = e => {
   e.target.reset();
   alert('تم إرسال الطلب');
 };
-
-/* 🆕 طلب الراتب يستخدم الرصيد المتبقي (بعد الخصومات) */
 $('#eReqSal').onclick = () => {
   const totals = getEmployeeTotals(curId);
   const balance = totals.balance;
